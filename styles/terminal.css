@@ -636,6 +636,46 @@ body.theme-terminal::after {
   color: #000;
 }
 
+body.theme-terminal .eval-modal-backdrop {
+  background: rgba(0, 10, 0, 0.85);
+}
+
+body.theme-terminal .eval-modal-dialog {
+  border: 2px solid var(--term-green);
+  background: #060c06;
+  color: var(--term-green);
+  box-shadow: 0 0 30px rgba(51, 255, 51, 0.4);
+}
+
+body.theme-terminal .eval-modal-dialog .win-titlebar {
+  background: #000;
+  border-bottom: 1px solid var(--term-green);
+  color: var(--term-green-bright);
+}
+
+body.theme-terminal .eval-modal-dialog .win-content-sheet {
+  background: #000;
+  color: var(--term-green);
+  border-color: var(--term-green-dim);
+}
+
+body.theme-terminal .eval-modal-dialog .win-statusbar {
+  background: #000;
+  border-top: 1px solid var(--term-green-dim);
+  color: var(--term-green-dim);
+}
+
+body.theme-terminal .eval-modal-dialog .win-btn {
+  background: #000;
+  color: var(--term-green);
+  border-color: var(--term-green);
+}
+
+body.theme-terminal .eval-modal-dialog .win-btn:hover {
+  background: var(--term-green);
+  color: #000;
+}
+
 /* Blinking Cursor */
 .blink-cursor {
   animation: blink 0.8s infinite;

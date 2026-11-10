@@ -20,7 +20,55 @@
   <link rel="stylesheet" href="styles/terminal.css">
   <link rel="stylesheet" href="styles/win99.css">
 </head>
-<body class="theme-terminal">
+<body class="theme-win99">
+
+  <!-- ========================================================================
+       MODAL DE AVALIAÇÃO DO PROJETO (PROMPT AO ENTRAR)
+       ======================================================================== -->
+  <div id="eval-modal-backdrop" class="eval-modal-backdrop">
+    <div id="eval-modal-window" class="win-window eval-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="eval-modal-title">
+      <div class="win-titlebar">
+        <div class="win-title-left">
+          <img src="assets/mascot-head.png" alt="Ícone Mascote" class="win-title-icon">
+          <span id="eval-modal-title">Mensagem do Sistema - Avaliação do PIPELINED</span>
+        </div>
+        <div class="win-title-controls">
+          <button type="button" class="win-ctl-btn eval-modal-close" title="Fechar">&#10005;</button>
+        </div>
+      </div>
+      <div class="win-body" style="padding: 16px 20px;">
+        <div style="display: flex; gap: 16px; align-items: flex-start; margin-bottom: 16px;">
+          <img src="assets/mascot-head.png" alt="Mascote" style="width: 52px; height: 52px; image-rendering: pixelated; flex-shrink: 0; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.4));">
+          <div>
+            <h3 style="font-size: 14px; margin-bottom: 6px; color: #000080;">Sua opinião é fundamental para o nosso projeto!</h3>
+            <p style="font-size: 13px; line-height: 1.5; color: #111;">
+              Olá! O <strong>PIPELINED</strong> é um projeto didático de arquitetura de computadores criado por estudantes de Engenharia de Computação da <strong>Universidade de São Paulo (USP)</strong>.
+            </p>
+            <p style="font-size: 13px; line-height: 1.5; color: #111; margin-top: 6px;">
+              Gostaríamos muito de pedir sua ajuda respondendo a uma <strong>rápida avaliação</strong> sobre a proposta, as regras e a abordagem didática do jogo:
+            </p>
+          </div>
+        </div>
+
+        <div style="background: #ffffd9; border: 1px solid #999900; padding: 10px; margin-bottom: 16px; font-size: 12px; display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 20px;">📋</span>
+          <span><strong>Formulário Google Forms:</strong> Avaliação acadêmica sobre o jogo de tabuleiro e a modelagem do pipeline RISC-V.</span>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSd2PKAUMBu_cE8NeRLMPDn3qTEC0weKkAtMepgD3cqrVn2QXg/viewform" target="_blank" rel="noopener noreferrer" id="eval-btn-primary" class="win-btn" style="background: #000080; color: #ffffff; font-weight: bold; padding: 6px 16px; font-size: 13px; text-decoration: none;">
+            📝 Abrir Avaliação (Google Forms)
+          </a>
+          <button type="button" id="eval-btn-dismiss" class="win-btn eval-modal-close" style="padding: 6px 14px; font-size: 13px;">
+            Continuar para o Site &gt;&gt;
+          </button>
+        </div>
+      </div>
+      <div class="win-statusbar">
+        <div class="win-status-panel">Universidade de São Paulo (USP) // Engenharia de Computação</div>
+      </div>
+    </div>
+  </div>
 
   <!-- ========================================================================
        BOOT SCREEN / INTRO ANIMATION
@@ -40,9 +88,9 @@
   </div>
 
   <!-- ========================================================================
-       TERMINAL / FALLOUT / DOS VIEW (DEFAULT)
+       TERMINAL / FALLOUT / DOS VIEW (MODO ALTERNATIVO)
        ======================================================================== -->
-  <div id="terminal-view">
+  <div id="terminal-view" style="display: none;">
     <div class="terminal-wrapper">
       
       <!-- Top Status Header -->
@@ -57,6 +105,9 @@
 
         <div class="term-controls">
           <button type="button" class="term-btn action-toggle-sound">&#128263; Som: Mudo</button>
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSd2PKAUMBu_cE8NeRLMPDn3qTEC0weKkAtMepgD3cqrVn2QXg/viewform" target="_blank" rel="noopener noreferrer" class="term-btn" style="border-color: #ffb000; color: #ffb000;">
+            &#128203; Avaliar
+          </a>
           <button type="button" class="term-btn accent action-toggle-theme">&#128452; Modo Windows 99</button>
           <a href="https://github.com/Sekqies/Pipelined" target="_blank" rel="noopener noreferrer" class="term-btn">
             &#128187; GitHub
@@ -82,6 +133,7 @@
       </div>
       <div class="term-prompt-quick">
         <span>Atalhos rápidos:</span>
+        <span class="term-quick-cmd" data-cmd="avaliar">avaliar</span> |
         <span class="term-quick-cmd" data-cmd="regras">regras</span> |
         <span class="term-quick-cmd" data-cmd="cartas">cartas</span> |
         <span class="term-quick-cmd" data-cmd="arquitetura">arquitetura</span> |
@@ -762,9 +814,9 @@
   </div>
 
   <!-- ========================================================================
-       WINDOWS 99 / RETRO DESKTOP GUI VIEW
+       WINDOWS 99 / RETRO DESKTOP GUI VIEW (PADRÃO)
        ======================================================================== -->
-  <div id="win99-view" style="display: none;">
+  <div id="win99-view" style="display: block;">
     
     <!-- Desktop Icons Workspace -->
     <div class="win99-desktop">
@@ -797,6 +849,11 @@
       <div class="win-icon" data-window="win-team-modal" tabindex="0">
         <img src="assets/mascot.png" alt="Ícone Autores" class="win-icon-img">
         <span class="win-icon-label">Autores_USP.txt</span>
+      </div>
+
+      <div class="win-icon" data-action="open-form" tabindex="0">
+        <span style="font-size: 28px; line-height: 36px; display: block;">📋</span>
+        <span class="win-icon-label">Avaliar_Forms.url</span>
       </div>
 
       <div class="win-icon" data-action="open-github" tabindex="0">
@@ -1206,6 +1263,10 @@
           <img src="assets/mascot.png" alt="" style="width: 16px;">
           <span>Sobre os Autores (USP)</span>
         </div>
+        <div class="win-start-item" data-action="open-form">
+          <span style="font-size: 16px;">📋</span>
+          <span>Avaliar Projeto (Google Forms)</span>
+        </div>
         <div class="win-start-divider"></div>
         <div class="win-start-item" data-action="switch-term">
           <span style="font-family: monospace; font-weight: bold;">&gt;_</span>
@@ -1234,6 +1295,15 @@
         </button>
         <button type="button" class="win-btn win-task-item" data-window="win-cartas-modal">
           <span>Baralho.exe</span>
+        </button>
+        <button type="button" class="win-btn win-task-item" data-window="win-arch-modal">
+          <span>Pipeline.doc</span>
+        </button>
+        <button type="button" class="win-btn win-task-item" data-window="win-sim-modal">
+          <span>Simulador.exe</span>
+        </button>
+        <button type="button" class="win-btn win-task-item" data-window="win-team-modal">
+          <span>Autores.txt</span>
         </button>
       </div>
 

@@ -19,7 +19,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const winClock = document.getElementById('win-clock');
   const desktopIcons = document.querySelectorAll('.win-icon');
 
-  let currentTheme = localStorage.getItem('pipelined_theme') || 'terminal';
+  // Google Forms evaluation URL
+  const evalFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSd2PKAUMBu_cE8NeRLMPDn3qTEC0weKkAtMepgD3cqrVn2QXg/viewform';
+
+  // Modal de avaliação (prompt ao entrar no site)
+  const evalModal = document.getElementById('eval-modal-backdrop');
+
+  function closeEvalModal() {
+    SoundEngine.click();
+    if (evalModal) {
+      evalModal.classList.add('hidden');
+    }
+  }
+
+  document.querySelectorAll('.eval-modal-close').forEach(btn => {
+    btn.addEventListener('click', closeEvalModal);
+  });
+
+  // Default theme: Windows 99 (alternativo: Terminal DOS)
+  let currentTheme = localStorage.getItem('pipelined_theme');
+  if (!localStorage.getItem('pipelined_v3_default')) {
+    currentTheme = 'win99';
+    localStorage.setItem('pipelined_theme', 'win99');
+    localStorage.setItem('pipelined_v3_default', 'true');
+  }
+  if (!currentTheme) {
+    currentTheme = 'win99';
+  }
 
   // Apply initial theme
   setTheme(currentTheme, false);
@@ -183,7 +209,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!cleanCmd) return;
 
     if (cleanCmd === 'ajuda' || cleanCmd === 'help') {
-      alert('COMANDOS DISPONÍVEIS:\n- regras: Rolar até o manual de regras\n- cartas: Ver galeria de cartas do jogo\n- arquitetura: Explicação da conexão com Pipeline RISC-V\n- tabuleiro: Visualizar o tabuleiro do circuito\n- simulador: Abrir simulador de branches e hazards\n- autores: Ver créditos dos estudantes da USP\n- win99: Alternar para interface Windows 99\n- github: Abrir o repositório oficial do projeto\n- som: Ligar ou desligar áudio');
+      alert('COMANDOS DISPONÍVEIS:\n- avaliar: Abrir o formulário Google Forms para avaliar o trabalho\n- regras: Rolar até o manual de regras\n- cartas: Ver galeria de cartas do jogo\n- arquitetura: Explicação da conexão com Pipeline RISC-V\n- tabuleiro: Visualizar o tabuleiro do circuito\n- simulador: Abrir simulador de branches e hazards\n- autores: Ver créditos dos estudantes da USP\n- win99: Alternar para interface Windows 99\n- github: Abrir o repositório oficial do projeto\n- som: Ligar ou desligar áudio');
+      return;
+    }
+
+    if (cleanCmd === 'avaliar' || cleanCmd === 'forms' || cleanCmd === 'formulario') {
+      window.open(evalFormUrl, '_blank');
       return;
     }
 
@@ -280,6 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setTheme('terminal');
       } else if (action === 'open-github') {
         window.open('https://github.com/Sekqies/Pipelined', '_blank');
+      } else if (action === 'open-form') {
+        window.open(evalFormUrl, '_blank');
       }
       startMenu.classList.add('hidden');
       startBtn.classList.remove('depressed');
@@ -292,15 +325,21 @@ document.addEventListener('DOMContentLoaded', () => {
       SoundEngine.click();
       desktopIcons.forEach(i => i.classList.remove('selected'));
       icon.classList.add('selected');
-    });
-
-    icon.addEventListener('dblclick', () => {
-      SoundEngine.beep();
       const targetWin = icon.getAttribute('data-window');
       const action = icon.getAttribute('data-action');
       if (targetWin) openWin99Window(targetWin);
       else if (action === 'switch-term') setTheme('terminal');
       else if (action === 'open-github') window.open('https://github.com/Sekqies/Pipelined', '_blank');
+      else if (action === 'open-form') window.open(evalFormUrl, '_blank');
+    });
+  });
+
+  // Taskbar Items Click
+  document.querySelectorAll('.win-task-item').forEach(item => {
+    item.addEventListener('click', () => {
+      SoundEngine.click();
+      const targetWin = item.getAttribute('data-window');
+      if (targetWin) openWin99Window(targetWin);
     });
   });
 
