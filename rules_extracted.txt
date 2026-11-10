@@ -1,0 +1,576 @@
+Regras do jogo de trilha RISC V
+Regulamento para partidas de teste Versão 0 3
+Quatro jogadores percorrem um programa e disputam quem chega primeiro ao final. As cartas permitem
+alterar registradores, acessar a memória, saltar trechos do percurso e interferir temporariamente nas ações
+dos adversários.
+Cada casa representa uma posição no fluxo do programa. Uma rodada reúne um turno de cada jogador. Os
+custos em turnos são uma simplificação didática do tempo de execução.
+
+Objetivo e participantes
+Participam quatro jogadores, cada um com um peão. Vence quem alcançar primeiro C30 por movimento
+normal ou por uma ação concluída. Não é necessário passar por todas as casas. Os peões podem compartilhar a
+mesma casa e não bloqueiam uns aos outros.
+
+Componentes
+
+
+
+
+
+
+Tabuleiro com 30 casas centrais, 18 casas no ramo A e 5 casas no ramo B, além da área de início e do vão
+de três posições.
+Quatro peões; quatro espaços compartilhados de registradores x1, x2, x3 e x4, com valores visíveis de 0 a 8;
+cinco posições de memória M1 a M5, com valores ocultos.
+Baralho de 60 instruções e baralho de 12 cartas de controle da UC, três de cada tipo, com descartes
+separados. São 72 cartas no total.
+54 fichas numéricas: 6 cópias de cada valor de 0 a 8, com versos iguais. As mesmas fichas representam
+valores na memória e nos registradores; as restantes ficam no saco.
+Marcadores de duração de branch e bloqueios; folha de registro das casas de compra já utilizadas; papel e
+lápis para representar provisoriamente números cujas fichas estejam esgotadas.
+
+Preparação
+Coloque os peões no início, antes de C1. Separe quatro fichas 0 e coloque uma visível em cada registrador.
+Misture as fichas restantes no saco, sorteie cinco e preencha M1 a M5, sem revelar os números. Todos podem
+consultar os registradores a qualquer momento.
+Embaralhe os dois baralhos separadamente. Cada jogador recebe duas instruções e nenhuma carta de UC.
+Sorteie o primeiro jogador e mantenha a ordem durante a partida. A mão é secreta; seu limite é de seis cartas,
+somando os dois tipos. Ao fim do turno, descarte os excessos à sua escolha.
+
+Página 1
+
+Percursos e casas do tabuleiro
+Os números centrais são identificados por C. As casas A1 a A18 e B1 a B5 são adicionais: os pontos de entrada e
+de reencontro não fazem parte dessas contagens. O tabuleiro tem 53 casas utilizáveis, além do início.
+
+Esquema de conexões. As distâncias desenhadas não representam a quantidade exata de casas.
+
+Percurso
+
+Sequência e restrição
+
+Principal
+
+INÍCIO → C1 → … → C30. Em C5 e C10, é possível escolher uma ramificação.
+
+Ramo A
+
+C5 → A1 → … → A18 → C25. Sem buracos. Da entrada ao reencontro são 19 movimentos, contra 20
+pela trilha central.
+
+Ramo B
+
+C10 → B1 → B2 → vão de três posições → B3 → B4 → B5 → C20. Só jump ou branch atravessa o vão.
+
+Tipos de casa e compras
+Há quatro tipos: vazia; compra de uma instrução; compra de três instruções; compra de uma carta de UC. A
+borda vermelha indica um destino de salto e pode coexistir com qualquer tipo de casa.
+A compra ocorre ao chegar à casa, inclusive por salto. Cada jogador recebe o benefício de cada casa de compra
+uma única vez na partida. Permanecer parado, retornar ou revisitar a casa não gera nova compra. Atravesse
+casas sem receber seus benefícios quando executar um salto.
+
+Retorno antes do buraco
+Não é permitido entrar no vão nem atravessá-lo por movimento normal. Em B2, o jogador pode permanecer e
+usar uma carta, ou retornar: B2 → B1 → C10, um passo por turno. Também pode desistir em B1 e voltar a C10.
+Após retornar, escolhe novamente seu percurso no turno seguinte. O retorno não permite recomprar cartas e
+não cria destinos de salto para trás.
+
+Página 2
+
+Sequência do turno e execução do branch
+Turno sem branch em preparação
+
+
+
+
+
+Escolha entre iniciar um branch ou realizar um turno normal. Não se inicia branch depois de caminhar.
+No turno normal, avance uma casa. Em uma bifurcação, escolha uma saída. Antes do vão, você pode ficar
+parado ou retornar conforme a regra do ramo B.
+Receba a compra da casa de chegada, se ainda tiver direito a ela. Você pode usar uma carta de instrução
+instantânea ou de UC. Uma carta recém-comprada pode ser usada, respeitando esse limite.
+Se a carta for jump, resolva o salto e a compra de seu destino. Essa compra não permite jogar uma segunda
+carta. Ajuste a mão para seis cartas e reduza os contadores de bloqueios que afetaram seu turno.
+
+Se uma carta estiver proibida por um bloqueio ou não tiver destino válido, ela não pode ser jogada nem precisa
+ser descartada. Passar a oportunidade de jogar uma carta é permitido.
+
+Branch em dois turnos próprios
+Primeiro turno: anuncie a carta, indique os dois registradores comparados e fixe um destino válido. Coloque a
+carta à sua frente. Esse é o primeiro dos dois turnos de execução: você não caminha, não compra pela casa
+atual e não joga outra carta. A condição pode ser verdadeira ou falsa nesse momento.
+Segundo turno: sem caminhar nem jogar outra carta, compare os valores atuais dos registradores
+compartilhados. Se a condição for verdadeira, mova o peão para o destino anunciado e receba a compra da
+casa, se houver direito. Se for falsa, permaneça onde está. Descarte o branch nos dois casos.
+As alterações feitas por adversários entre os dois turnos afetam a comparação. O destino anunciado não pode
+mudar durante a preparação. Depois da conclusão, o jogador volta a realizar turnos normais a partir de seu
+próximo turno.
+
+Bloqueio e abandono da preparação
+Um bloqueio de desvios impede iniciar ou concluir um branch e usar jump. Se atingir um branch já iniciado, sua
+conclusão fica suspensa até um turno próprio sem esse bloqueio. Os turnos suspensos contam para a duração
+do bloqueio, mas não concluem o branch.
+No início de seu turno, o jogador pode abandonar um branch: descarta a carta e realiza um turno normal. Isso
+também vale quando a preparação está suspensa. Bloqueios de memória ou de escrita em registradores não
+impedem a comparação de um branch.
+
+Exemplo com registradores compartilhados
+Ana prepara blt x1, x2, B3 quando x1 vale 2 e x2 vale 5. Antes do próximo turno de Ana, Bruno altera x1 para 7.
+Se ninguém mudar esses valores, o branch de Ana falha: 7 não é menor que 5. Ana gastou os dois turnos,
+permanece na casa de origem e descarta a carta.
+
+Página 3
+
+Cartas de instrução e destinos
+Carta
+
+Tempo
+
+Efeito
+
+addi xr, xr, imm
+
+Imediato
+
+Some ao registrador indicado o valor fixo da carta.
+
+add xr, xr, xs
+
+Imediato
+
+Escolha xr e some a ele o valor atual de xs, fixado pela carta.
+
+sub xr, xr, xs
+
+Imediato
+
+Escolha xr e subtraia dele o valor atual de xs, fixado pela carta.
+
+bgt xa, xb, destino
+
+2 turnos
+
+Ao concluir, salte se xa > xb. Se forem iguais, a condição é falsa.
+
+blt xa, xb, destino
+
+2 turnos
+
+Ao concluir, salte se xa < xb. Se forem iguais, a condição é falsa.
+
+j destino
+
+Imediato
+
+Salte sem comparação para o primeiro destino vermelho mais próximo.
+
+lw com memória fixa
+
+Imediato
+
+Escolha o registrador que receberá o valor da posição indicada.
+
+lw com registrador fixo
+
+Imediato
+
+Escolha a posição de memória que fornecerá o valor ao registrador
+indicado.
+
+sw com memória fixa
+
+Imediato
+
+Escolha o registrador cujo valor será copiado para a posição indicada.
+
+Imediato significa resolver no mesmo turno em que a carta é jogada da mão. Não significa executar ao
+comprar. Apenas o branch substitui o movimento normal e ocupa dois turnos; as demais cartas usam a
+oportunidade de carta do turno.
+
+Como determinar os destinos permitidos
+Considere apenas caminhos à frente, seguindo as conexões do tabuleiro. Em cada caminho possível, o primeiro
+destino vermelho encontrado é candidato; não se pode ignorá-lo para alcançar outro mais distante. Antes de
+uma bifurcação, caminhos diferentes podem fornecer candidatos diferentes.
+O branch permite escolher um desses candidatos ao iniciar a preparação. O jump deve alcançar o candidato
+com menor distância de percurso. Conte uma posição por casa e as três posições ausentes do vão; por isso, B2
+→ B3 tem distância de quatro posições. Não use a distância física desenhada no papel.
+Se houver empate no jump, prefira o candidato que mantém a trilha central na primeira bifurcação que
+diferencia os caminhos. Depois de entrar em um ramo, os saltos seguem suas conexões até o reencontro; não
+atravessam lateralmente para outra trilha.
+B3 deve ter borda vermelha, garantindo um destino após o buraco. Nenhuma casa do vão é destino válido. Sem
+candidato à frente, a carta de desvio não pode ser usada. Todos os saltos terminam em uma casa utilizável.
+
+Página 4
+
+Registradores e memória de dados
+Valores compartilhados e operações
+Os quatro registradores são compartilhados e seus valores ficam visíveis. Para atualizar um deles, leia os
+operandos, retire o valor antigo e escolha uma ficha com o resultado; essa escolha não é aleatória. Fichas
+retiradas voltam ao saco; anotações provisórias são apagadas. Em ADD e SUB, o destino e o primeiro operando
+são o mesmo registrador escolhido; a carta fixa o outro operando.
+Leia os valores antes de trocar qualquer ficha. É permitido usar o mesmo registrador nos dois operandos: ADD
+dobra seu valor antes de aplicar o limite; SUB de um registrador por ele mesmo resulta em zero. Se o valor não
+mudar, mantenha a ficha.
+Os valores permitidos vão de 0 a 8. Se uma soma ultrapassar 8, o resultado será 0, independentemente do
+excesso. Se uma subtração produzir número negativo, o resultado será 0. Essa regra aritmética permanece
+igual nesta versão.
+Operação
+
+Resultado
+
+x1 = 7; addi x1, x1, 3
+
+x1 passa a 0, pois 10 ultrapassa 8.
+
+x2 = 2; x3 = 5; sub x2, x2, x3
+
+x2 passa a 0, pois o resultado seria −3.
+
+x4 = 3; add x4, x4, x4
+
+x4 passa a 6.
+
+Leitura com LOAD
+Ao jogar LW, anuncie a posição e o registrador, revele o número da memória para todos e retire o valor antigo
+do registrador conforme a regra anterior. Transfira a ficha ou anotação lida para ele, com o número visível. O
+valor anterior é substituído, e não somado.
+Misture as fichas do saco e sorteie uma nova para a posição de memória utilizada, sem revelar seu número. O
+valor pode coincidir com o anterior. As outras quatro posições ficam inalteradas. A transferência da ficha e a
+reposição resolvem fisicamente a cópia do dado e a renovação da memória.
+
+Escrita com STORE
+Ao jogar SW, anuncie o registrador fonte e a posição fixada na carta. Mantenha o valor do registrador. Retire o
+valor antigo da memória: devolva a ficha ao saco sem mostrá-la ou apague a anotação. Escolha uma ficha com
+o valor anunciado e coloque-a na memória com o número oculto. Essa escolha não é aleatória.
+O valor escrito por SW é conhecido por todos até a próxima alteração da posição, mesmo com a ficha virada. Se
+faltar uma ficha do valor exigido por qualquer atualização, anote esse número em papel no espaço
+correspondente, oculto na memória e visível no registrador. A anotação vale como uma ficha e não impede a
+ação. Assim que houver uma ficha disponível desse valor, substitua a anotação antes do próximo sorteio. Não
+há sorteio adicional por essa substituição.
+
+Notação usada nas cartas
+Use legendas como “LW x2 ← M2” e “SW M4 ← x4”. M1 a M5 são endereços simplificados da memória do
+jogo. Os campos livres são escolhidos ao anunciar a carta. Memória e registradores usam o mesmo conjunto de
+fichas.
+Página 5
+
+Cartas de controle e situações especiais
+As cartas de UC são efeitos de jogo aplicados a um jogador, e não instruções RISC V. Os bloqueios limitam as
+ações desse jogador; não congelam os registradores ou a memória para os demais participantes.
+Carta
+
+Restrição ou efeito
+
+Bloqueio de leitura
+MemRead desativado
+
+O jogador não pode usar LW. SW, aritmética e desvios continuam
+permitidos.
+
+Bloqueio de desvios
+Branch e Jump desativados
+
+O jogador não pode usar J nem iniciar ou concluir branch. Pode caminhar
+normalmente onde houver caminho.
+
+Bloqueio de escrita em registradores
+RegWrite desativado
+
+O jogador não pode usar ADDI, ADD, SUB ou LW. Pode usar SW, desvios e
+cartas de UC.
+
+Restaurar controle
+
+Remova imediatamente o bloqueio que afeta você. Não concede
+imunidade e não altera dados ou registradores.
+
+Alvo e duração
+Jogue um bloqueio contra outro jogador na sua oportunidade de carta. O alvo não pode receber outro bloqueio
+enquanto já tiver um ativo. O efeito dura seus três próximos turnos, e não três turnos da mesa. Use três
+marcadores e retire um ao fim de cada turno afetado; o bloqueio sai depois do terceiro.
+Turnos de branch e turnos em que o jogador permanece diante do buraco contam para essa duração. Outros
+jogadores podem continuar alterando os registradores compartilhados, mesmo se o alvo estiver sob RegWrite
+desativado.
+Restaurar controle usa a oportunidade de carta do turno e só remove o próprio bloqueio. Pode ser jogada
+mesmo sob RegWrite desativado. Se houver branch em preparação, o jogador deve abandoná-lo para realizar
+um turno normal e jogar a restauração.
+
+Compra de cartas e esgotamento
+Quando um baralho acabar, embaralhe apenas seu descarte para formar uma nova pilha. Cartas na mão,
+bloqueios ativos e branches em preparação não entram nessa reciclagem. Se não houver cartas suficientes,
+compre apenas as disponíveis.
+Não há compra automática no início do turno. Um jogador parado diante do vão depende das cartas que
+possui, das mudanças nos registradores ou do retorno até C10. Permanecer numa casa de compra nunca
+permite abastecimento repetido.
+
+Chegada e prioridade
+A partida termina imediatamente quando um peão alcança C30. Não se completa a rodada e não há desempate
+posterior. Uma preparação ainda não concluída não conta como chegada. Durante uma ação, nenhum
+adversário pode interromper com uma carta; seus efeitos só podem ser jogados no próprio turno.
+
+Página 6
+
+Configuração inicial para testar em sala
+O baralho tem 60 instruções e 12 cartas de UC. ADDI +2 e +3 predominam; os três jumps permanecem raros.
+Avalie o equilíbrio em sala.
+Cartas de instrução
+
+Quantidade
+
+ADDI
+
+18
+
+ADD
+
+8
+
+SUB
+
+8
+
+BGT
+
+6
+
+BLT
+
+6
+
+J
+
+3
+
+LW
+
+6
+
+SW
+
+5
+
+Total
+
+60
+
+ADDI: quatro cartas +1, sete +2 e sete +3. Quantidades por registrador na ordem +1/+2/+3: x1 = 1/2/2; x2 =
+1/2/2; x3 = 1/2/1; x4 = 1/1/2. ADD e SUB: duas cartas por fonte fixa; destino livre. BGT e BLT: uma carta por par
+x1/x2, x1/x3, x1/x4, x2/x3, x2/x4 e x3/x4. LW: cinco cartas com memória fixa, uma por posição, e uma com x4
+fixo e memória livre. SW: uma por posição de memória. UC: três bloqueios de leitura, três de desvios, três de
+escrita em registradores e três restaurações do próprio controle.
+
+Casas de compra
+Tipo
+
+Casas
+
+Uma instrução
+
+C2, C13, C21, C29, A2, A10, A12 e B1
+
+Três instruções
+
+C4, C14, C24, A8 e A17
+
+Uma carta de UC
+
+C7, C17, C27, A5, A14 e B4
+
+Borda vermelha
+
+C8, C13, C18, C23, C28, A6, A12, A18 e B3
+
+As demais casas são vazias. C13 e A12 combinam compra e borda vermelha. O ramo A economiza apenas um
+movimento em relação ao centro, mas oferece mais oportunidades de compra no trecho correspondente. O
+ramo B oferece uma redução maior de percurso em troca do risco do vão.
+
+O que observar nos testes
+Registre a duração da partida, os usos de cada instrução, os branches bem-sucedidos e os retornos por falta de
+desvio. Observe se o jump raro decide a partida sozinho; se ADD e SUB ajudam a disputar os registradores; e se
+o ramo A oferece motivos suficientes para ser escolhido. Estes valores ainda precisam de validação com alunos.
+Página 7
+
+Orientações didáticas e decisões de projeto
+Regras confirmadas
+Os quatro registradores são compartilhados e usam fichas visíveis. Cada jogador começa com duas instruções.
+A memória tem cinco posições ocultas, M1 a M5. O ramo B tem cinco casas utilizáveis além do vão; é permitido
+retornar até C10 antes do buraco. O jump permanece imediato e raro. O branch compara os valores atuais ao
+concluir o segundo turno.
+
+Ajustes introduzidos para fechar o regulamento
+A versão usa 60 instruções, incluindo três jumps, e 12 cartas de UC, três de cada tipo; 54 fichas numéricas; duas
+cartas iniciais e limite de seis na mão. Permanecem as compras únicas por casa e jogador; branch anunciado
+antes do movimento, com destino fixo; um bloqueio por jogador, contado em turnos do alvo; e abandono de
+preparação permitido. As casas especiais são parâmetros para testar em sala.
+
+Diferenças em relação ao RISC V
+A soma que volta diretamente a zero ao exceder 8 e a subtração limitada a zero são convenções do jogo. No
+RV32I, a aritmética mantém os 32 bits inferiores do resultado. Para uma versão futura com maior proximidade
+binária, pode-se usar valores de 0 a 7 e retorno circular nas duas operações.
+LW normalmente copia o conteúdo da memória sem renová-lo. A troca após cada LOAD funciona aqui como
+um evento adicional de renovação de dados. SW copia o valor do registrador para a memória e não apaga o
+registrador. O tabuleiro compartilha registradores entre os participantes como recurso competitivo; isso não
+representa quatro CPUs reais com um único banco de registradores.
+BGT é uma pseudoinstrução que pode ser expressa por BLT com os operandos trocados; J corresponde a JAL
+com destino x0. Use rótulos, como B3, em vez de “pc+3”: as distâncias do jogo não representam
+automaticamente deslocamentos em bytes de uma instrução real.
+Os bloqueios da UC são uma mecânica competitiva inspirada em sinais de controle. Não correspondem a
+instruções que permitem desligar os desvios de outra CPU. Dois turnos de branch e jump imediato são custos
+escolhidos para esta partida, não tempos universais de processadores RISC V.
+
+Perguntas para conversar com os alunos
+
+
+
+
+
+Que mudanças nos registradores fizeram seu branch funcionar ou falhar?
+Por que o destino de um salto pode mudar o percurso sem fazer o tempo voltar?
+Quando valeu a pena preparar dados ou esperar dois turnos, em vez de caminhar?
+O que uma escrita na memória permite prever sobre uma leitura futura?
+
+Referências técnicas para o professor
+Especificação oficial RV32I da RISC V International
+Manual de Assembly RISC V e tabela de pseudoinstruções
+Exemplo de custos de ciclos no processador CV32E40P
+
+Página 8
+
+Modelos de cartas do jogo
+? marca uma escolha: x? = registrador; destino? = casa permitida; alvo? = adversário.
+M1 a M5 são posições de memória em notação didática. Exemplos de frente em 63 × 88 mm.
+FLUXO
+
+2 TURNOS
+
+BRANCH
+
+MEMÓRIA
+
+IMEDIATO
+
+LOAD
+
+blt x1, x2, destino?
+
+ARITMÉTICA
+
+IMEDIATO
+
+ADDI
+lw x?, M3
+
+addi x2, x2, +3
+
+EFEITO
+
+EFEITO
+
+EFEITO
+
+No segundo turno, se x1 < x2,
+salte para o destino anunciado.
+Caso contrário, fique onde está.
+
+Copie o número de M3 para o
+registrador escolhido. Reponha
+M3 com um sorteio oculto.
+
+Some 3 ao valor de x2. Se
+ultrapassar 8, x2 passa a 0.
+
+ESCOLHA O DESTINO
+
+ESCOLHA O REGISTRADOR
+
+destino?: escolha uma casa
+vermelha permitida ao iniciar.
+
+x?: escolha x1, x2, x3 ou x4. M3 é
+fixo nesta carta.
+
+Sem campo livre: x2 e +3 são
+fixos nesta carta.
+
+Fique parado nos dois turnos.
+Compare os valores ao concluir.
+
+Memória → registrador. O valor
+anterior é substituído.
+
+Outras cartas ADDI usam +1 ou +2,
+conforme o baralho.
+
+ARITMÉTICA
+
+FLUXO
+
+CONTROLE
+
+IMEDIATO
+
+ADD
+
+IMEDIATO
+
+JUMP
+
+add x?, x?, x1
+
+CAMPOS FIXOS
+
+ATIVA AGORA
+
+FLAG DA UC
+j destino
+
+RegWrite = 0
+
+EFEITO
+
+EFEITO
+
+EFEITO
+
+Some o valor de x1 ao registrador
+escolhido. Se ultrapassar 8, o
+resultado é 0.
+
+Salte para a casa vermelha
+permitida mais próxima à frente,
+seguindo o percurso.
+
+Um adversário não pode usar
+ADDI, ADD, SUB nem LW por três
+turnos dele.
+
+ESCOLHA O REGISTRADOR
+
+DESTINO AUTOMÁTICO
+
+ESCOLHA O ALVO
+
+x?: use o mesmo registrador
+escolhido nas duas posições.
+
+Sem escolha de destino: aplique
+os critérios de distância e
+desempate das regras.
+
+alvo?: escolha outro jogador sem
+bloqueio ativo.
+
+Leia os dois valores antes de atualizar
+o registrador.
+
+Salto sem comparação. Não atravessa
+lateralmente as trilhas.
+
+Dura 3 turnos do alvo. Restaurar
+controle anula o bloqueio.
+
+Para imprimir as cartas nas dimensões indicadas, selecione tamanho real ou escala de 100%.
+
+Página 9
+
+
