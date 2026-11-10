@@ -1,0 +1,444 @@
+/* ==========================================================================
+   PIPELINED - Windows 99 / Retro Desktop GUI Mode
+   Teal (#008080), 3D Bevels, Classic Titlebars, Taskbar & Start Menu
+   ========================================================================== */
+
+body.theme-win99 {
+  background-color: var(--win-desktop);
+  color: #000000;
+  font-family: 'MS Sans Serif', Tahoma, 'Segoe UI', Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  min-height: 100vh;
+  padding-bottom: 36px; /* Space for Taskbar */
+  position: relative;
+  user-select: none;
+}
+
+/* 3D Classic Borders Helpers */
+.win-outset {
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  background-color: var(--win-gray);
+  box-shadow: inset 1px 1px 0px #dfdfdf, inset -1px -1px 0px #808080;
+}
+
+.win-inset {
+  border-top: 2px solid #808080;
+  border-left: 2px solid #808080;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  background-color: #ffffff;
+  box-shadow: inset 1px 1px 0px #000000, inset -1px -1px 0px #dfdfdf;
+}
+
+.win-btn {
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  background-color: var(--win-gray);
+  box-shadow: inset 1px 1px 0px #dfdfdf, inset -1px -1px 0px #808080;
+  padding: 3px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  color: #000000;
+}
+
+.win-btn:active, .win-btn.depressed {
+  border-top: 2px solid #000000;
+  border-left: 2px solid #000000;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  box-shadow: inset 1px 1px 0px #808080;
+  padding: 4px 9px 2px 11px;
+}
+
+/* Desktop Workspace & Icons */
+.win99-desktop {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 84px);
+  grid-auto-rows: 84px;
+  gap: 12px;
+  align-content: start;
+}
+
+.win-icon {
+  width: 76px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  padding: 4px;
+  border: 1px dotted transparent;
+}
+
+.win-icon:hover {
+  background-color: rgba(0, 0, 128, 0.2);
+}
+
+.win-icon.selected {
+  border-color: #ffff99;
+}
+
+.win-icon.selected .win-icon-label {
+  background-color: #000080;
+  color: #ffffff;
+}
+
+.win-icon-img {
+  width: 36px;
+  height: 36px;
+  image-rendering: pixelated;
+  margin-bottom: 4px;
+  filter: drop-shadow(1px 1px 0px rgba(0,0,0,0.5));
+}
+
+.win-icon-label {
+  font-size: 11px;
+  color: #ffffff;
+  text-shadow: 1px 1px 1px #000000;
+  padding: 1px 3px;
+  word-break: break-word;
+  line-height: 1.15;
+}
+
+/* Classic Windows Container & Structure */
+.win-window {
+  position: relative;
+  background-color: var(--win-gray);
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  box-shadow: inset 1px 1px 0px #dfdfdf, inset -1px -1px 0px #808080, 2px 2px 5px rgba(0,0,0,0.3);
+  margin: 16px auto 32px auto;
+  max-width: 1120px;
+  width: 96%;
+}
+
+.win-window.minimized {
+  display: none !important;
+}
+
+/* Titlebar */
+.win-titlebar {
+  background: linear-gradient(90deg, var(--win-blue-title), var(--win-blue-light));
+  color: #ffffff;
+  padding: 3px 4px 3px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.win-titlebar.inactive {
+  background: linear-gradient(90deg, #808080, #b0b0b0);
+}
+
+.win-title-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.win-title-icon {
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+}
+
+.win-title-controls {
+  display: flex;
+  gap: 2px;
+}
+
+.win-ctl-btn {
+  width: 16px;
+  height: 14px;
+  background-color: var(--win-gray);
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #000000;
+  border-bottom: 1px solid #000000;
+  font-size: 10px;
+  line-height: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #000000;
+  padding: 0;
+}
+
+.win-ctl-btn:active {
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  border-right: 1px solid #ffffff;
+  border-bottom: 1px solid #ffffff;
+}
+
+/* Window Menu Bar (Arquivo, Editar, Exibir, Ajuda) */
+.win-menubar {
+  display: flex;
+  padding: 2px 6px;
+  background-color: var(--win-gray);
+  border-bottom: 1px solid #808080;
+  font-size: 11px;
+}
+
+.win-menu-item {
+  padding: 2px 6px;
+  cursor: pointer;
+}
+.win-menu-item:hover {
+  background-color: #000080;
+  color: #ffffff;
+}
+
+/* Window Content Body */
+.win-body {
+  padding: 16px;
+  user-select: text;
+}
+
+.win-content-sheet {
+  background-color: #ffffff;
+  color: #000000;
+  border-top: 2px solid #808080;
+  border-left: 2px solid #808080;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  padding: 20px;
+  max-height: 75vh;
+  overflow-y: auto;
+  font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Status Bar at Bottom of Window */
+.win-statusbar {
+  border-top: 1px solid #808080;
+  background-color: var(--win-gray);
+  padding: 2px 6px;
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.win-status-panel {
+  border-top: 1px solid #808080;
+  border-left: 1px solid #808080;
+  border-right: 1px solid #ffffff;
+  border-bottom: 1px solid #ffffff;
+  padding: 1px 6px;
+  flex: 1;
+}
+
+/* Win99 Typography */
+.win-h1 {
+  font-size: 1.4rem;
+  color: #000080;
+  border-bottom: 2px solid #000080;
+  padding-bottom: 6px;
+  margin-bottom: 16px;
+}
+
+.win-h2 {
+  font-size: 1.2rem;
+  color: #000080;
+  margin: 18px 0 10px 0;
+  border-bottom: 1px solid #c0c0c0;
+  padding-bottom: 4px;
+}
+
+.win-callout {
+  background-color: #ffffe1;
+  border: 1px solid #999900;
+  padding: 12px;
+  margin: 14px 0;
+  font-size: 13px;
+}
+
+.win-callout.arch {
+  background-color: #e6f2ff;
+  border-color: #0066cc;
+}
+
+/* Win99 Taskbar */
+.win-taskbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  background-color: var(--win-gray);
+  border-top: 2px solid #ffffff;
+  box-shadow: inset 0 1px 0px #dfdfdf;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px;
+  z-index: 10000;
+}
+
+.win-start-btn {
+  font-weight: bold;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
+.win-start-icon {
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+}
+
+.win-tasks-list {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+  margin: 0 8px;
+  overflow-x: auto;
+}
+
+.win-task-item {
+  height: 24px;
+  max-width: 160px;
+  min-width: 110px;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.win-tray {
+  border-top: 1px solid #808080;
+  border-left: 1px solid #808080;
+  border-right: 1px solid #ffffff;
+  border-bottom: 1px solid #ffffff;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+/* Start Menu Popup */
+.win-start-menu {
+  position: fixed;
+  bottom: 32px;
+  left: 2px;
+  width: 220px;
+  background-color: var(--win-gray);
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+  display: flex;
+  z-index: 10001;
+}
+
+.win-start-menu.hidden {
+  display: none;
+}
+
+.win-start-sidebar {
+  width: 28px;
+  background: linear-gradient(180deg, #000080, #1084d0);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 10px 4px;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+.win-start-items {
+  flex: 1;
+  padding: 4px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.win-start-item {
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  color: #000000;
+  font-size: 12px;
+}
+
+.win-start-item:hover {
+  background-color: #000080;
+  color: #ffffff;
+}
+
+.win-start-divider {
+  height: 1px;
+  background-color: #808080;
+  border-bottom: 1px solid #ffffff;
+  margin: 4px 2px;
+}
+
+/* Tabs inside Win99 Window */
+.win-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: -2px;
+  position: relative;
+  z-index: 2;
+}
+
+.win-tab {
+  background-color: var(--win-gray);
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid var(--win-gray);
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: normal;
+  border-radius: 4px 4px 0 0;
+}
+
+.win-tab.active {
+  font-weight: bold;
+  padding-top: 5px;
+  margin-top: -2px;
+  background-color: var(--win-gray);
+  border-bottom: 2px solid var(--win-gray);
+}

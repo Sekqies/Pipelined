@@ -1,0 +1,647 @@
+/* ==========================================================================
+   PIPELINED - Fallout / DOS Retro CRT Terminal Mode
+   Green Phosphor (#33ff33) on Deep Black (#070b07)
+   ========================================================================== */
+
+body.theme-terminal {
+  background-color: #050805;
+  color: var(--term-green);
+  font-family: 'Share Tech Mono', 'VT323', 'Courier New', Courier, monospace;
+  line-height: 1.5;
+  text-shadow: 0 0 4px rgba(51, 255, 51, 0.65);
+  position: relative;
+  min-height: 100vh;
+}
+
+/* CRT Screen Scanlines & Bezel */
+body.theme-terminal::before {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%),
+              linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  z-index: 999;
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+}
+
+body.theme-terminal::after {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.85), inset 0 0 40px rgba(0, 30, 0, 0.6);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* CRT Screen Flicker (Subtle) */
+@keyframes crt-flicker {
+  0% { opacity: 0.985; }
+  50% { opacity: 1; }
+  52% { opacity: 0.97; }
+  54% { opacity: 1; }
+  100% { opacity: 0.985; }
+}
+
+.terminal-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px 80px 20px;
+  animation: crt-flicker 0.15s infinite;
+  position: relative;
+  z-index: 1;
+}
+
+/* Header & Top Bar */
+.term-header {
+  border: 2px solid var(--term-green-dim);
+  background: rgba(10, 24, 10, 0.85);
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  box-shadow: 0 0 15px rgba(51, 255, 51, 0.2);
+}
+
+.term-title-block {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.term-mascot-icon {
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 5px rgba(51, 255, 51, 0.8));
+}
+
+.term-logo-text {
+  font-size: 1.5rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: var(--term-green-bright);
+}
+
+.term-subtitle {
+  font-size: 0.85rem;
+  color: var(--term-green-dim);
+  text-transform: uppercase;
+}
+
+.term-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.term-btn {
+  background: #000;
+  color: var(--term-green);
+  border: 1px solid var(--term-green);
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+}
+
+.term-btn:hover, .term-btn:focus {
+  background: var(--term-green);
+  color: #000;
+  box-shadow: 0 0 10px var(--term-green);
+  outline: none;
+}
+
+.term-btn.accent {
+  border-color: var(--term-cyan);
+  color: var(--term-cyan);
+}
+.term-btn.accent:hover {
+  background: var(--term-cyan);
+  color: #000;
+  box-shadow: 0 0 10px var(--term-cyan);
+}
+
+/* Terminal Nav Bar */
+.term-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+  background: rgba(7, 15, 7, 0.9);
+  padding: 10px;
+  border-left: 4px solid var(--term-green);
+}
+
+.term-nav-link {
+  color: var(--term-green);
+  text-decoration: none;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+}
+
+.term-nav-link:hover, .term-nav-link.active {
+  border-color: var(--term-green);
+  background: rgba(51, 255, 51, 0.15);
+  color: var(--term-green-bright);
+}
+
+/* Command Prompt Input */
+.term-prompt-box {
+  background: #000;
+  border: 1px solid var(--term-green-dim);
+  padding: 12px 16px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: inset 0 0 10px rgba(0, 30, 0, 0.8);
+}
+
+.term-prompt-prefix {
+  color: var(--term-green-bright);
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.term-prompt-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--term-green);
+  font-family: inherit;
+  font-size: 1rem;
+  width: 100%;
+  text-shadow: 0 0 4px rgba(51, 255, 51, 0.8);
+}
+
+.term-prompt-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--term-green-dim);
+}
+
+.term-quick-cmd {
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 2px 4px;
+}
+.term-quick-cmd:hover {
+  color: var(--term-green-bright);
+  background: rgba(51, 255, 51, 0.15);
+}
+
+/* Main Section Blocks */
+.term-section {
+  border: 1px solid var(--term-green-dim);
+  background: rgba(8, 16, 8, 0.8);
+  margin-bottom: 32px;
+  padding: 24px;
+  position: relative;
+}
+
+.term-section-header {
+  border-bottom: 1px solid var(--term-green-dim);
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.term-section-title {
+  font-size: 1.3rem;
+  color: var(--term-green-bright);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.term-section-badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border: 1px solid var(--term-green-dim);
+  color: var(--term-green-dim);
+}
+
+/* Typography in Terminal */
+.term-p {
+  margin-bottom: 14px;
+  font-size: 1rem;
+  text-align: justify;
+}
+
+.term-h3 {
+  font-size: 1.15rem;
+  color: var(--term-green-bright);
+  margin: 20px 0 10px 0;
+  border-left: 3px solid var(--term-green);
+  padding-left: 8px;
+}
+
+.term-h4 {
+  font-size: 1rem;
+  color: var(--term-cyan);
+  margin: 16px 0 8px 0;
+}
+
+.term-ul, .term-ol {
+  margin: 12px 0 16px 24px;
+}
+
+.term-li {
+  margin-bottom: 8px;
+}
+
+.term-alert {
+  border-left: 4px solid var(--term-amber);
+  background: rgba(40, 25, 0, 0.4);
+  padding: 12px 16px;
+  margin: 16px 0;
+  color: #ffda73;
+}
+
+.term-alert.danger {
+  border-left-color: var(--term-red);
+  background: rgba(40, 5, 5, 0.4);
+  color: #ff9999;
+}
+
+.term-alert.info {
+  border-left-color: var(--term-cyan);
+  background: rgba(0, 30, 40, 0.4);
+  color: #88ffff;
+}
+
+/* Hero Showcase */
+.term-hero {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 28px;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 860px) {
+  .term-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+.term-mascot-frame {
+  text-align: center;
+  border: 2px solid var(--term-green);
+  background: #000;
+  padding: 16px;
+  box-shadow: 0 0 20px rgba(51, 255, 51, 0.25);
+  position: relative;
+}
+
+.term-mascot-img {
+  max-width: 100%;
+  height: auto;
+  max-height: 380px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 10px rgba(51, 255, 51, 0.5));
+}
+
+.term-mascot-caption {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: var(--term-green-dim);
+  border-top: 1px dashed var(--term-green-dim);
+  padding-top: 6px;
+}
+
+/* ASCII and Code Blocks */
+.term-code {
+  background: #000;
+  border: 1px solid var(--term-green-dim);
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  overflow-x: auto;
+  margin: 14px 0;
+  color: var(--term-green-bright);
+}
+
+/* Board Viewer in Terminal */
+.term-board-container {
+  text-align: center;
+  background: #000;
+  border: 2px solid var(--term-green-dim);
+  padding: 16px;
+  margin: 20px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.term-board-img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--term-green-dark);
+  box-shadow: 0 0 15px rgba(51, 255, 51, 0.2);
+}
+
+/* Table in Terminal */
+.term-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 0.9rem;
+}
+
+.term-table th, .term-table td {
+  border: 1px solid var(--term-green-dim);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.term-table th {
+  background: rgba(51, 255, 51, 0.15);
+  color: var(--term-green-bright);
+}
+
+.term-table tr:hover {
+  background: rgba(51, 255, 51, 0.05);
+}
+
+/* Card Gallery in Terminal */
+.term-card-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.term-filter-btn {
+  background: #000;
+  color: var(--term-green);
+  border: 1px solid var(--term-green-dim);
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+.term-filter-btn.active, .term-filter-btn:hover {
+  background: var(--term-green);
+  color: #000;
+  border-color: var(--term-green-bright);
+}
+
+.term-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.term-card-item {
+  border: 1px solid var(--term-green-dim);
+  background: #020502;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.term-card-item:hover {
+  border-color: var(--term-green-bright);
+  box-shadow: 0 0 15px rgba(51, 255, 51, 0.3);
+  transform: translateY(-2px);
+}
+
+.term-card-item .card-flip-container {
+  width: 180px;
+  height: 250px;
+  margin-bottom: 12px;
+}
+
+.term-card-meta {
+  width: 100%;
+  font-size: 0.8rem;
+  border-top: 1px dashed var(--term-green-dark);
+  padding-top: 8px;
+}
+
+.term-card-name {
+  font-weight: bold;
+  color: var(--term-green-bright);
+  font-size: 0.95rem;
+}
+
+.term-card-type {
+  color: var(--term-cyan);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.term-card-desc {
+  color: var(--term-green);
+  margin-top: 4px;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+/* Interactive Simulator in Terminal */
+.term-sim-container {
+  background: #000;
+  border: 2px solid var(--term-green);
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.term-sim-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.term-reg-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--term-green-dim);
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: rgba(0, 20, 0, 0.6);
+}
+
+.term-reg-val {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--term-green-bright);
+}
+
+.term-sim-console {
+  background: #000;
+  border: 1px dashed var(--term-green-dim);
+  padding: 12px;
+  min-height: 120px;
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+  margin: 16px 0;
+}
+
+/* Team Credits in Terminal */
+.term-team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.term-author-card {
+  border: 1px solid var(--term-green-dim);
+  background: rgba(0, 15, 0, 0.7);
+  padding: 14px;
+  transition: all 0.2s ease;
+}
+
+.term-author-card:hover {
+  border-color: var(--term-green-bright);
+  background: rgba(0, 30, 0, 0.9);
+}
+
+.term-author-name {
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: var(--term-green-bright);
+}
+
+.term-author-role {
+  font-size: 0.8rem;
+  color: var(--term-cyan);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* Footer in Terminal */
+.term-footer {
+  border-top: 2px solid var(--term-green-dim);
+  padding: 24px 0;
+  margin-top: 40px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--term-green-dim);
+}
+
+.term-footer a {
+  color: var(--term-green-bright);
+  text-decoration: none;
+}
+.term-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Boot / Intro Animation Overlay */
+#boot-screen {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #000;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  color: var(--term-green);
+  font-family: 'Share Tech Mono', 'Courier New', Courier, monospace;
+}
+
+#boot-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+  pointer-events: none;
+}
+
+.boot-monitor-frame {
+  max-width: 680px;
+  width: 100%;
+  border: 3px solid var(--term-green);
+  background: #050a05;
+  padding: 24px;
+  box-shadow: 0 0 40px rgba(51, 255, 51, 0.35);
+  position: relative;
+}
+
+.boot-mascot-wrap {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.boot-mascot-img {
+  width: 140px;
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 15px rgba(51, 255, 51, 0.8));
+  animation: mascot-pulse 1.8s infinite alternate ease-in-out;
+}
+
+@keyframes mascot-pulse {
+  0% { transform: scale(0.96) rotate(-1deg); }
+  100% { transform: scale(1.04) rotate(1deg); }
+}
+
+.boot-log-box {
+  background: #000;
+  border: 1px solid var(--term-green-dim);
+  padding: 14px;
+  font-size: 0.85rem;
+  min-height: 160px;
+  max-height: 220px;
+  overflow-y: hidden;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.boot-skip-btn {
+  background: transparent;
+  color: var(--term-green);
+  border: 1px dashed var(--term-green);
+  padding: 8px 18px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: block;
+  margin: 0 auto;
+}
+
+.boot-skip-btn:hover {
+  background: var(--term-green);
+  color: #000;
+}
+
+/* Blinking Cursor */
+.blink-cursor {
+  animation: blink 0.8s infinite;
+}
+
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}

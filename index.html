@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIPELINED - O Jogo de Trilha da Arquitetura RISC-V</title>
+  <meta name="description" content="Jogo de tabuleiro didático sobre a arquitetura de processadores e pipeline RISC-V, criado por estudantes de Engenharia de Computação da Universidade de São Paulo (USP).">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="shortcut icon" href="favicon.ico">
+
+  <!-- Google Fonts: Retro & Monospace -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="styles/common.css">
+  <link rel="stylesheet" href="styles/terminal.css">
+  <link rel="stylesheet" href="styles/win99.css">
+</head>
+<body class="theme-terminal">
+
+  <!-- ========================================================================
+       BOOT SCREEN / INTRO ANIMATION
+       ======================================================================== -->
+  <div id="boot-screen" role="dialog" aria-modal="true" aria-label="Inicialização do Sistema">
+    <div class="boot-monitor-frame">
+      <div class="boot-mascot-wrap">
+        <img src="assets/mascot.png" alt="Mascote Pipelined" class="boot-mascot-img">
+      </div>
+      <div style="text-align: center; margin-bottom: 12px;">
+        <span style="font-size: 1.4rem; font-weight: bold; color: #33ff33; letter-spacing: 2px;">&gt; PIPELINED v0.3</span><br>
+        <span style="font-size: 0.85rem; color: #1a881a;">SIMULADOR DE FLUXO &amp; ARQUITETURA RISC-V // USP</span>
+      </div>
+      <div id="boot-log" class="boot-log-box" aria-live="polite"></div>
+      <button id="boot-skip-btn" class="boot-skip-btn" type="button">[ ESC / Pular Animação de Entrada ]</button>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       TERMINAL / FALLOUT / DOS VIEW (DEFAULT)
+       ======================================================================== -->
+  <div id="terminal-view">
+    <div class="terminal-wrapper">
+      
+      <!-- Top Status Header -->
+      <header class="term-header">
+        <div class="term-title-block">
+          <img src="assets/mascot-head.png" alt="Mascote Ícone" class="term-mascot-icon">
+          <div>
+            <div class="term-logo-text">&gt; PIPELINED_</div>
+            <div class="term-subtitle">Arquitetura de Computadores // Trilha RISC-V // USP</div>
+          </div>
+        </div>
+
+        <div class="term-controls">
+          <button type="button" class="term-btn action-toggle-sound">&#128263; Som: Mudo</button>
+          <button type="button" class="term-btn accent action-toggle-theme">&#128452; Modo Windows 99</button>
+          <a href="https://github.com/Sekqies/Pipelined" target="_blank" rel="noopener noreferrer" class="term-btn">
+            &#128187; GitHub
+          </a>
+        </div>
+      </header>
+
+      <!-- Terminal Navigation Bar -->
+      <nav class="term-nav" aria-label="Navegação do Terminal">
+        <a href="#sec-visao" class="term-nav-link">[ 01. Visão Geral ]</a>
+        <a href="#sec-regras" class="term-nav-link">[ 02. Regras &amp; Turnos ]</a>
+        <a href="#sec-tabuleiro" class="term-nav-link">[ 03. Tabuleiro &amp; Trilhas ]</a>
+        <a href="#sec-cartas" class="term-nav-link">[ 04. Baralho &amp; Registradores ]</a>
+        <a href="#sec-arquitetura" class="term-nav-link">[ 05. Conexão Pipeline ]</a>
+        <a href="#sec-simulador" class="term-nav-link">[ 06. Simulador Interativo ]</a>
+        <a href="#sec-autores" class="term-nav-link">[ 07. Autores USP ]</a>
+      </nav>
+
+      <!-- Terminal Interactive Prompt -->
+      <div class="term-prompt-box">
+        <span class="term-prompt-prefix">pipelined@usp:~$</span>
+        <input type="text" id="term-prompt-input" class="term-prompt-input" placeholder="Digite um comando (ex: regras, cartas, arquitetura, win99, ajuda)..." autocomplete="off" spellcheck="false">
+      </div>
+      <div class="term-prompt-quick">
+        <span>Atalhos rápidos:</span>
+        <span class="term-quick-cmd" data-cmd="regras">regras</span> |
+        <span class="term-quick-cmd" data-cmd="cartas">cartas</span> |
+        <span class="term-quick-cmd" data-cmd="arquitetura">arquitetura</span> |
+        <span class="term-quick-cmd" data-cmd="tabuleiro">tabuleiro</span> |
+        <span class="term-quick-cmd" data-cmd="simulador">simulador</span> |
+        <span class="term-quick-cmd" data-cmd="win99">win99</span> |
+        <span class="term-quick-cmd" data-cmd="github">github</span> |
+        <span class="term-quick-cmd" data-cmd="ajuda">ajuda</span>
+      </div>
+
+      <!-- ====================================================================
+           SECTION 01: VISÃO GERAL & APRESENTAÇÃO
+           ==================================================================== -->
+      <section id="sec-visao" class="term-section">
+        <div class="term-section-header">
+          <h2 class="term-section-title">// 01. VISÃO GERAL &amp; OBJETIVO</h2>
+          <span class="term-section-badge">STATUS: PRONTO // VERSÃO 0.3</span>
+        </div>
+
+        <div class="term-hero">
+          <div>
+            <p class="term-p">
+              <strong>PIPELINED</strong> é um jogo de tabuleiro didático e competitivo de estratégia, projetado para ensinar de forma prática e imersiva como funcionam os circuitos de um processador real baseado no conjunto de instruções <strong>RISC-V</strong> (RV32I).
+            </p>
+            <p class="term-p">
+              Na partida, quatro jogadores atuam como fluxos concorrentes de instruções (threads / processos). Cada jogador controla um peão que representa o <strong>Program Counter (PC)</strong> avançando por uma trilha de casas até o final do programa em <strong>C30</strong>.
+            </p>
+            <div class="term-alert">
+              <strong>OBJETIVO DA PARTIDA:</strong> Quatro jogadores percorrem o programa. Vence aquele cujo peão alcançar primeiro a casa <strong>C30</strong> por movimento normal ou por salto concluído. Não é obrigatório passar por todas as casas intermediárias!
+            </div>
+            <p class="term-p">
+              Ao longo do trajeto, você compra e joga <strong>cartas de instrução</strong> (aritmética, saltos, leitura e escrita na memória) e <strong>cartas de controle da UC</strong> para manipular registradores compartilhados, contornar perigos no fluxo de dados ou paralisar o avanço dos seus oponentes.
+            </p>
+          </div>
+
+          <div class="term-mascot-frame">
+            <img src="assets/mascot.png" alt="Mascote Pipelined com monitor retrô e pastas de arquivos" class="term-mascot-img">
+            <div class="term-mascot-caption">
+              <strong>Mascote PIPELINED</strong><br>
+              Monitor CRT, cabos de dados e pilha de arquivos de registradores.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           SECTION 02: REGRAS & MECÂNICAS DO JOGO
+           ==================================================================== -->
+      <section id="sec-regras" class="term-section">
+        <div class="term-section-header">
+          <h2 class="term-section-title">// 02. REGRAS DO JOGO &amp; ESTRUTURA DO TURNO</h2>
+          <span class="term-section-badge">REGULAMENTO OFICIAL USP</span>
+        </div>
+
+        <p class="term-p">
+          Uma rodada reúne um turno de cada jogador. Os custos em turnos no jogo são uma representação simplificada dos ciclos de clock e do tempo de execução em hardware.
+        </p>
+
+        <h3 class="term-h3">&gt; Componentes da Mesa</h3>
+        <ul class="term-ul">
+          <li class="term-li"><strong>Tabuleiro de Circuito:</strong> 53 casas utilizáveis distribuídas entre a Trilha Central (30 casas), Ramo A (18 casas) e Ramo B (5 casas), além da área de início e do Vão de 3 posições.</li>
+          <li class="term-li"><strong>Quatro Peões:</strong> Marcadores de posição de cada jogador (representando o endereço no Program Counter). Os peões podem compartilhar a mesma casa sem bloqueio físico mútuo.</li>
+          <li class="term-li"><strong>Quatro Registradores Compartilhados:</strong> Identificados como <code>x1</code>, <code>x2</code>, <code>x3</code> e <code>x4</code> (ou <code>x0..x3</code> no circuito), com fichas numéricas visíveis de valores entre <strong>0 e 8</strong>.</li>
+          <li class="term-li"><strong>Memória de Dados:</strong> Cinco posições <code>M1</code> a <code>M5</code> com fichas mantidas ocultas viradas para baixo.</li>
+          <li class="term-li"><strong>Dois Baralhos Separados:</strong> Baralho de <strong>60 Instruções</strong> e Baralho de <strong>12 Cartas de Controle da UC</strong> (total de 72 cartas). Limite de 6 cartas na mão.</li>
+          <li class="term-li"><strong>54 Fichas Numéricas:</strong> 6 cópias de cada valor de 0 a 8.</li>
+        </ul>
+
+        <h3 class="term-h3">&gt; Sequência do Turno Normal</h3>
+        <ol class="term-ol">
+          <li class="term-li"><strong>Escolha Inicial:</strong> No início de seu turno, decida se inicia a preparação de um <em>Branch</em> (desvio condicional) ou se realiza um turno normal de caminhada. <em>Não é permitido iniciar branch após caminhar!</em></li>
+          <li class="term-li"><strong>Avanço Físico:</strong> No turno normal, avance 1 casa à frente seguindo as linhas do tabuleiro. Em bifurcações (C5 ou C10), escolha a ramificação desejada.</li>
+          <li class="term-li"><strong>Benefício de Compra:</strong> Se a casa de chegada conceder compra e você ainda tiver direito a ela, compre as cartas correspondentes. <em>Cada jogador recebe o benefício de cada casa de compra apenas uma única vez na partida!</em></li>
+          <li class="term-li"><strong>Oportunidade de Carta:</strong> Você pode jogar 1 carta da sua mão de efeito imediato (instrução aritmética, acesso à memória ou carta da Unidade de Controle).</li>
+          <li class="term-li"><strong>Fim do Turno:</strong> Se exceder o limite de 6 cartas na mão, descarte os excessos. Reduza em 1 os contadores de bloqueio que estejam ativos sobre você.</li>
+        </ol>
+
+        <h3 class="term-h3">&gt; A Execução Crucial do Branch em Dois Turnos</h3>
+        <p class="term-p">
+          O desvio condicional (<code>blt</code> ou <code>bgt</code>) é a mecânica mais tática do jogo, pois <strong>exige dois turnos próprios consecutivos</strong>:
+        </p>
+        <div class="term-alert info">
+          <strong>TURNO 1 (Preparação / Pipeline Stall):</strong> Você anuncia a carta da mão, escolhe os dois registradores a serem comparados (ex: <code>x1</code> e <code>x2</code>) e fixa uma casa vermelha válida como destino à frente. O peão <em>não caminha</em> e você <em>não compra cartas</em>. A carta fica exposta na mesa.<br><br>
+          <strong>TURNO 2 (Avaliação da Condição / ALU EX):</strong> Sem caminhar nem jogar outra carta, compare os valores atuais dos registradores compartilhados:
+          <ul style="margin: 8px 0 0 16px;">
+            <li><strong>Se a condição for VERDADEIRA:</strong> Seu peão salta imediatamente para a casa destino anunciada e recebe compras se tiver direito.</li>
+            <li><strong>Se a condição for FALSA:</strong> Seu peão <em>permanece onde está</em>. Você gastou 2 turnos inteiros e a carta de branch é descartada!</li>
+          </ul>
+        </div>
+        <p class="term-p">
+          <em>Perigo de Corrida (Data Hazard):</em> Entre o seu primeiro e o segundo turno, todos os adversários jogam! Se um oponente alterar os registradores antes do seu turno chegar, ele pode fazer seu branch falhar!
+        </p>
+      </section>
+
+      <!-- ====================================================================
+           SECTION 03: TABULEIRO & TRILHAS (RAMOS A & B)
+           ==================================================================== -->
+      <section id="sec-tabuleiro" class="term-section">
+        <div class="term-section-header">
+          <h2 class="term-section-title">// 03. O TABULEIRO &amp; PERCURSOS DO PROGRAMA</h2>
+          <span class="term-section-badge">CIRCUITO DO PIPELINE</span>
+        </div>
+
+        <div class="term-board-container">
+          <img src="assets/board.png" alt="Tabuleiro do jogo Pipelined exibindo trilhas, memória de dados, registradores e descarte" class="term-board-img">
+          <div class="term-mascot-caption">
+            <strong>Circuito Impresso do Tabuleiro:</strong> Dados (M1..M5) no topo, decks de Instrução e UC à direita, Registradores (x0..x3) na base e Trilha com o Vão central.
+          </div>
+        </div>
+
+        <table class="term-table">
+          <thead>
+            <tr>
+              <th>Percurso</th>
+              <th>Extensão e Casas</th>
+              <th>Regra Especial &amp; Relação com Hardware</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Trilha Principal</strong></td>
+              <td><code>INÍCIO → C1 → ... → C30</code></td>
+              <td>Fluxo sequencial normal do programa. Em C5 e C10 há opções de bifurcação para caminhos alternativos.</td>
+            </tr>
+            <tr>
+              <td><strong>Ramo A (Loop Rápido)</strong></td>
+              <td><code>C5 → A1 → ... → A18 → C25</code></td>
+              <td>Percurso sem obstáculos. Da entrada ao reencontro são 19 movimentos, contra 20 movimentos pela trilha central (economiza 1 ciclo de instrução).</td>
+            </tr>
+            <tr>
+              <td><strong>Ramo B (O Vão Perigoso)</strong></td>
+              <td><code>C10 → B1 → B2 → [VÃO] → B3 → B4 → B5 → C20</code></td>
+              <td>
+                <strong>O Vão de 3 posições é intransponível por movimento normal!</strong><br>
+                Apenas <em>Jump (j)</em> ou <em>Branch (blt/bgt)</em> conseguem saltar por cima do buraco até B3! Em B2, o jogador parado pode tentar jogar um salto ou ser obrigado a recuar passo a passo (<code>B2 → B1 → C10</code>), simulando um <strong>Pipeline Flush / Rollback</strong>!
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="term-h3">&gt; Casas Especiais do Tabuleiro</h3>
+        <ul class="term-ul">
+          <li class="term-li"><strong>Compra de 1 Instrução:</strong> Casas <code>C2, C13, C21, C29, A2, A10, A12, B1</code>.</li>
+          <li class="term-li"><strong>Compra de 3 Instruções:</strong> Casas <code>C4, C14, C24, A8, A17</code> (Cache Line Fill massivo).</li>
+          <li class="term-li"><strong>Compra de 1 Carta da UC:</strong> Casas <code>C7, C17, C27, A5, A14, B4</code>.</li>
+          <li class="term-li"><strong>Borda Vermelha (Destinos de Salto):</strong> Casas <code>C8, C13, C18, C23, C28, A6, A12, A18, B3</code>. Saltos incondicionais (<code>j</code>) vão sempre para a casa vermelha permitida mais próxima à frente!</li>
+        </ul>
+      </section>
+
+      <!-- ====================================================================
+           SECTION 04: BARALHO DE CARTAS & REGISTRADORES
+           ==================================================================== -->
+      <section id="sec-cartas" class="term-section">
+        <div class="term-section-header">
+          <h2 class="term-section-title">// 04. DECK DE CARTAS &amp; MECÂNICAS ARITMÉTICAS</h2>
+          <span class="term-section-badge">60 INSTRUÇÕES + 12 UC</span>
+        </div>
+
+        <p class="term-p">
+          O jogo conta com 72 cartas no total, ilustradas com temática retrô de terminal e circuitos. Clique em qualquer carta da galeria para <strong>girar em 3D</strong> e conferir seu verso oficial com a mascote PIPELINED!
+        </p>
+
+        <!-- Gallery Category Filter Buttons -->
+        <div class="term-card-filters">
+          <button type="button" class="term-filter-btn active" data-filter="all">[ TODAS AS CARTAS ]</button>
+          <button type="button" class="term-filter-btn" data-filter="arith">[ ARITMÉTICA ]</button>
+          <button type="button" class="term-filter-btn" data-filter="branch">[ DESVIOS (BRANCH / JUMP) ]</button>
+          <button type="button" class="term-filter-btn" data-filter="memory">[ MEMÓRIA (LW / SW) ]</button>
+          <button type="button" class="term-filter-btn" data-filter="uc">[ CONTROLE DA UC ]</button>
+          <button type="button" class="term-filter-btn" data-filter="tokens">[ FICHAS NUMÉRICAS ]</button>
+        </div>
+
+        <!-- Cards Grid -->
+        <div class="term-cards-grid">
+          
+          <!-- ADDI -->
+          <div class="term-card-item" data-category="arith">
+            <div class="card-flip-container" title="Clique para girar a carta">
+              <div class="card-flip-inner">
+                <div class="card-front">
+                  <img src="assets/cards/card-addi.png" alt="Carta ADDI">
+                </div>
+                <div class="card-back">
+                  <img src="assets/card-back-pipeline.png" alt="Verso Pipelined">
+                </div>
+              </div>
+            </div>
+            <div class="term-card-meta">
+              <div class="term-card-name">ADDI (Add Immediate)</div>
+              <div class="term-card-type">Aritmética // Imediata</div>
+              <div class="term-card-desc">Soma valor fixo (+1, +2 ou +3) a um registrador. Se ultrapassar 8, volta a zero!</div>
+            </div>
+          </div>
+
+          <!-- ADD -->
+          <div class="term-card-item" data-category="arith">
+            <div class="card-flip-container" title="Clique para girar a carta">
+              <div class="card-flip-inner">
+                <div class="card-front">
+                  <img src="assets/cards/card-add.png" alt="Carta ADD">
+                </div>
+                <div class="card-back">
+                  <img src="assets/card-back-pipeline.png" alt="Verso Pipelined">
+                </div>
+              </div>
+            </div>
+            <div class="term-card-meta">
+              <div class="term-card-name">ADD (Add Register)</div>
+              <div class="term-card-type">Aritmética // Imediata</div>
+              <div class="term-card-desc">Soma o valor de um registrador ao registrador escolhido. Se exceder 8, o resultado passa a 0.</div>
+            </div>
+          </div>
+
+          <!-- SUB -->
+          <div class="term-card-item" data-category="arith">
+            <div class="card-flip-container" title="Clique para girar a carta">
+              <div class="card-flip-inner">
+                <div class="card-front">
+                  <img src="assets/cards/card-sub.png" alt="Carta SUB">
+                </div>
+                <div class="card-back">
+                  <img src="assets/card-back-pipeline.png" alt="Verso Pipelined">
+                </div>
+              </div>
+            </div>
+            <div class="term-card-meta">
+              <div class="term-card-name">SUB (Subtract)</div>
+              <div class="term-card-type">Aritmética // Imediata</div>
+              <div class="term-card-desc">Subtrai o valor indicado. Se o resultado for negativo (&lt; 0), o registrador passa a 0.</div>
+            </div>
+          </div>
+
+          <!-- BLT -->
+          <div class="term-card-item" data-category="branch">
+            <div class="card-flip-container" title="Clique para girar a carta">
+              <div class="card-flip-inner">
+                <div class="card-front">
+                  <img src="assets/cards/card-blt.png" alt="Carta BLT">
+                </div>
+                <div class="card-back">
+                  <img src="assets/card-back-pipeline.png" alt="Verso Pipelined">
+                </div>
+              </div>
+            </div>
+            <div class="term-card-meta">
+              <div class="term-card-name">BLT (Branch Less Than)</div>
+              <div class="term-card-type">Fluxo // 2 Turnos</div>
+              <div class="term-card-desc">Ao concluir o 2º turno: se xa &lt; xb, salta ao destino anunciado. Se falso, permanece parado!</div>
+            </div>
+          </div>
+
+          <!-- BGT -->
+          <div class="term-card-item" data-category="branch">
+            <div class="card-flip-container" title="Clique para girar a carta">
+              <div class="card-flip-inner">
+                <div class="card-front">
+                  <img src="assets/cards/card-bgt.png" alt="Carta BGT">
+                </div>
+                <div class="card-back">
+                  <img src="assets/card-back-pipeline.png" alt="Verso Pipelined">
+                </div>
+              </div>
+            </div>
+            <div class="term-card-meta">
+              <div class="term-card-name">BGT (Branch Greater Than)</div>
+              <div class="term-card-type">Fluxo // 2 Turnos</div>
+              <div class="term-card-desc">Ao concluir o 2º turno: se xa &gt; xb, salta ao destino anunciado. Cuidado com adulterações no intervalo!</div>
+            </div>
+          </div>
+
+          <!-- JUMP -->
+          <div class="term-card-item" data-category="branch">
+            <div class="card-flip-container" title="Clique para girar a carta">
+              <div class="card-flip-inner">
+                <div class="card-front">
+                  <img src="assets/cards/card-jump.png" alt="Carta JUMP">
+                </div>
+                <div class="card-back">
+                  <img src="assets/card-back-pipeline.png" alt="Verso Pipelined">
+                </div>
+              </div>
+            </div>
+            <div class="term-card-meta">
+              <div class="term-card-name">J (Unconditional Jump)</div>
+              <div class="term-card-type">Fluxo // Imediato (Rara)</div>
+              <div class="term-card-desc">Salte sem comparação para a casa vermelha permitida mais próxima à frente. Apenas 3 no baralho!</div>
+            </div>
+          </div>
+
+          <!-- LW -->
+          <div class="term-card-item" data-category="memory">
+            <div class="card-flip-container" title="Clique para girar a carta">
+              <div class="card-flip-inner">
+                <div class="card-front">
+                  <img src="assets/cards/card-lw.png" alt="Carta LW">
+                </div>
+                <div class="card-back">
+                  <img src="assets/card-back-pipeline.png" alt="Verso Pipelined">
+                </div>
+              </div>
+            </div>
+            <div class="term-card-meta">
+              <div class="term-card-name">LW (Load Word)</div>
+              <div class="term-card-type">Memória // Imediata</div>
+              <div class="term-card-desc">Copia valor de M1..M5 para um registrador. Repõe a memória com novo sorteio oculto do saco.</div>
+            </div>
+          </div>
+
+          <!-- SW -->
+          <div class="term-card-item" data-category="memory">
+            <div class="card-flip-container" title="Clique para girar a carta">
+              <div class="card-flip-inner">
+                <div class="card-front">
+                  <img src="assets/cards/card-sw.png" alt="Carta SW">
+                </div>
+                <div class="card-back">
+                  <img src="assets/card-back-pipeline.png" alt="Verso Pipelined">
+                </div>
+              </div>
+            </div>
+            <div class="term-card-meta">
+              <div class="term-card-name">SW (Store Word)</div>
+              <div class="term-card-type">Memória // Imediata</div>
+              <div class="term-card-desc">Grava valor do registrador na posição de memória indicada. O valor passa a ser público para todos.</div>
+            </div>
+          </div>
+
+          <!-- UC: MemRead=0 -->
+          <div class="term-card-item" data-category="uc">
+            <div class="card-flip-container" title="Clique para girar a carta">
+              <div class="card-flip-inner">
+                <div class="card-front">
+                  <img src="assets/cards/card-uc-memread.png" alt="Bloqueio MemRead=0">
+                </div>
+                <div class="card-back">
+                  <img src="assets/card-back-hazard.png" alt="Verso Hazard / Falha">
+                </div>
+              </div>
+            </div>
+            <div class="term-card-meta">
+              <div class="term-card-name">Flag UC: MemRead = 0</div>
+              <div class="term-card-type">Controle // Alvo Oponente</div>
+              <div class="term-card-desc">O adversário escolhido não pode usar instruções LW por 3 turnos próprios dele.</div>
+            </div>
+          </div>
+
+          <!-- UC: RegWrite=0 -->
+          <div class="term-card-item" data-category="uc">
+            <div class="card-flip-container" title="Clique para girar a carta">
+              <div class="card-flip-inner">
+                <div class="card-front">
+                  <img src="assets/cards/card-uc-regwrite.png" alt="Bloqueio RegWrite=0">
+                </div>
+                <div class="card-back">
+                  <img src="assets/card-back-hazard.png" alt="Verso Hazard / Falha">
+                </div>
+              </div>
+            </div>
+            <div class="term-card-meta">
+              <div class="term-card-name">Flag UC: RegWrite = 0</div>
+              <div class="term-card-type">Controle // Alvo Oponente</div>
+              <div class="term-card-desc">O adversário não pode executar ADDI, ADD, SUB nem LW por 3 turnos (desativa escrita no banco).</div>
+            </div>
+          </div>
+
+          <!-- UC: JMP=0 -->
+          <div class="term-card-item" data-category="uc">
+            <div class="card-flip-container" title="Clique para girar a carta">
+              <div class="card-flip-inner">
+                <div class="card-front">
+                  <img src="assets/cards/card-uc-jmp.png" alt="Bloqueio JMP=0">
+                </div>
+                <div class="card-back">
+                  <img src="assets/card-back-hazard.png" alt="Verso Hazard / Falha">
+                </div>
+              </div>
+            </div>
+            <div class="term-card-meta">
+              <div class="term-card-name">Flag UC: Branch &amp; JMP = 0</div>
+              <div class="term-card-type">Controle // Alvo Oponente</div>
+              <div class="term-card-desc">Desativa desvios do alvo. Oponente não pode iniciar ou concluir branch nem usar Jump por 3 turnos!</div>
+            </div>
+          </div>
+
+          <!-- UC: Restaurar -->
+          <div class="term-card-item" data-category="uc">
+            <div class="card-flip-container" title="Clique para girar a carta">
+              <div class="card-flip-inner">
+                <div class="card-front">
+                  <img src="assets/cards/card-uc-restore.png" alt="Restaurar Controle">
+                </div>
+                <div class="card-back">
+                  <img src="assets/card-back-pipeline.png" alt="Verso Pipelined">
+                </div>
+              </div>
+            </div>
+            <div class="term-card-meta">
+              <div class="term-card-name">Restaurar Controle (:D)</div>
+              <div class="term-card-type">Controle // Próprio</div>
+              <div class="term-card-desc">Remove imediatamente qualquer bloqueio de controle que esteja afetando você.</div>
+            </div>
+          </div>
+
+          <!-- Fichas Numéricas -->
+          <div class="term-card-item" data-category="tokens">
+            <div class="card-flip-container" title="Clique para girar">
+              <div class="card-flip-inner">
+                <div class="card-front">
+                  <img src="assets/cards/tokens-numbers.png" alt="Fichas Numéricas 0 a 8">
+                </div>
+                <div class="card-back">
+                  <img src="assets/card-back-pipeline.png" alt="Verso Pipelined">
+                </div>
+              </div>
+            </div>
+            <div class="term-card-meta">
+              <div class="term-card-name">Fichas Numéricas (0 a 8)</div>
+              <div class="term-card-type">Componente // Fichas</div>
+              <div class="term-card-desc">54 fichas com valores de 0 a 8 usadas no banco de registradores e na memória M1..M5.</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           SECTION 05: CONEXÃO COM ARQUITETURA RISC-V & PIPELINE
+           ==================================================================== -->
+      <section id="sec-arquitetura" class="term-section">
+        <div class="term-section-header">
+          <h2 class="term-section-title">// 05. A CONEXÃO COM A ARQUITETURA DE COMPUTADORES</h2>
+          <span class="term-section-badge">TEORIA &amp; HARDWARE RV32I</span>
+        </div>
+
+        <p class="term-p">
+          O tabuleiro do <strong>PIPELINED</strong> é um modelo pedagógico concreto dos circuitos de um processador real. Cada mecânica das regras foi deliberadamente desenhada para ensinar conceitos fundamentais da arquitetura de computadores:
+        </p>
+
+        <h3 class="term-h3">&gt; 1. Os 5 Estágios do Pipeline Clássico</h3>
+        <p class="term-p">
+          Em processadores RISC (como o MIPS e o RISC-V clássico), a execução de uma instrução é dividida em 5 etapas sequenciais:
+        </p>
+        <div class="term-code">
+[ IF: Busca ]  ──&gt;  [ ID: Decodificação ]  ──&gt;  [ EX: Execução ALU ]  ──&gt;  [ MEM: Acesso RAM ]  ──&gt;  [ WB: Escrita ]
+      │                     │                          │                        │                      │
+ Avanço de 1 casa     Leitura de cartas         Aritmética ADD/SUB          Instruções LW/SW       Atualização de xn
+   no Tabuleiro           da mão                  ou Comparação             Memória Oculta           Ficha no banco
+        </div>
+
+        <h3 class="term-h3">&gt; 2. Hazards de Controle &amp; Penalidade de Desvio (Branch Penalty)</h3>
+        <p class="term-p">
+          <strong>Por que o Branch custa 2 turnos próprios?</strong><br>
+          Em um processador real com pipeline, quando uma instrução de desvio condicional (<code>BEQ</code>, <code>BNE</code>, <code>BLT</code>) entra no processador, a CPU ainda não sabe se a condição é verdadeira até que os operandos cheguem ao estágio <strong>EX (ALU)</strong> ou <strong>ID</strong>.
+        </p>
+        <p class="term-p">
+          Se o processador não tiver predição de desvios, ele é forçado a inserir <strong>bolhas (pipeline stalls)</strong>, pausando o avanço das próximas instruções até descobrir o resultado. No jogo, isso é modelado pelo primeiro turno de preparação: o jogador fica paralisado (stall), declarando os registradores. Somente no segundo turno a ALU avalia a condição!
+        </p>
+
+        <h3 class="term-h3">&gt; 3. Hazards de Dados &amp; Condições de Corrida (Data Hazards)</h3>
+        <p class="term-p">
+          No hardware, quando uma instrução depende do resultado de uma instrução anterior que ainda está voando pelo pipeline, ocorre um perigo de dados (RAW - <em>Read After Write</em>). No jogo, os quatro registradores <code>x1..x4</code> são compartilhados na mesa:
+        </p>
+        <div class="term-alert info">
+          <strong>Exemplo de Corrida Real:</strong> Ana prepara <code>blt x1, x2, B3</code> quando <code>x1=2</code> e <code>x2=5</code> (verdadeiro). Antes do próximo turno de Ana, o jogador Bruno joga um <code>addi x1, x1, 7</code>, elevando <code>x1</code> para 7. Quando chega a vez de Ana avaliar seu branch, <code>7 &lt; 5</code> é FALSO! O branch falha e Ana perde 2 turnos inteiros! Isso ilustra dramaticamente a necessidade de sincronização e forwarding em sistemas concorrentes.
+        </div>
+
+        <h3 class="term-h3">&gt; 4. O Vão do Ramo B: A Bolha Estrutural e o Rollback</h3>
+        <p class="term-p">
+          O <strong>vão de 3 posições</strong> no Ramo B representa uma quebra profunda no fluxo de execução: sem um desvio (Jump ou Branch) para saltar sobre a falha, a instrução não consegue caminhar sequencialmente. O jogador preso diante do vão que não puder desviar é forçado a <strong>recuar passo a passo (B2 → B1 → C10)</strong>, simulando com perfeição um <strong>Pipeline Flush</strong> (descarte de instruções da fila e retorno ao ponto seguro anterior).
+        </p>
+
+        <h3 class="term-h3">&gt; 5. Sinais de Controle da Unidade de Controle (UC)</h3>
+        <p class="term-p">
+          Em uma CPU real, a Unidade de Controle gera sinais digitais (linhas de 1 bit) que ativam ou desativam módulos do caminho de dados:
+        </p>
+        <ul class="term-ul">
+          <li class="term-li"><code>RegWrite = 0</code>: Desativa a escrita no registrador. No jogo, impede jogar cartas aritméticas ou LW por 3 turnos.</li>
+          <li class="term-li"><code>MemRead = 0</code>: Desativa a leitura da memória de dados, impedindo instruções LW.</li>
+          <li class="term-li"><code>Branch/Jump = 0</code>: Desativa os multiplexadores de desvio do Program Counter.</li>
+        </ul>
+
+        <h3 class="term-h3">&gt; Convenções Didáticas vs. RISC-V Real (RV32I)</h3>
+        <p class="term-p">
+          Para garantir partidas dinâmicas e acessíveis em sala de aula, o jogo adota convenções didáticas explicadas pelos autores:
+        </p>
+        <ul class="term-ul">
+          <li class="term-li"><strong>Aritmética Circular 0..8:</strong> No RV32I real, operações operam em complemento de 2 com 32 bits (módulos $2^{32}$). No jogo, somas acima de 8 voltam a zero, e subtrações menores que zero fixam em zero.</li>
+          <li class="term-li"><strong>BGT como Pseudoinstrução:</strong> No padrão oficial RISC-V, <code>bgt xa, xb, label</code> é convertida internamente pelo montador em <code>blt xb, xa, label</code>.</li>
+          <li class="term-li"><strong>J como Pseudoinstrução:</strong> O comando <code>j destino</code> equivale à instrução <code>jal x0, offset</code>, descartando o endereço de retorno.</li>
+        </ul>
+      </section>
+
+      <!-- ====================================================================
+           SECTION 06: SIMULADOR INTERATIVO DE BRANCH & HAZARDS
+           ==================================================================== -->
+      <section id="sec-simulador" class="term-section">
+        <div class="term-section-header">
+          <h2 class="term-section-title">// 06. SIMULADOR INTERATIVO DE BRANCH &amp; HAZARD</h2>
+          <span class="term-section-badge">TESTE DE HARDWARE &amp; REGRAS</span>
+        </div>
+
+        <p class="term-p">
+          Experimente em tempo real a mecânica de 2 ciclos de branch e as condições de corrida nos registradores compartilhados:
+        </p>
+
+        <div class="term-sim-container">
+          <!-- Registers Bank -->
+          <h4 class="term-h4">&gt; Banco de Registradores Compartilhados (Valores 0 a 8)</h4>
+          <div class="sim-grid">
+            <div class="sim-box" style="border: 1px solid var(--term-green-dim);">
+              <div class="reg-counter">
+                <span>Registrador <strong>[ x1 ]</strong>:</span>
+                <span id="sim-val-x1" class="term-reg-val">2</span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="term-btn btn-sim-inc" data-reg="x1">+1</button>
+                <button type="button" class="term-btn btn-sim-dec" data-reg="x1">-1</button>
+              </div>
+            </div>
+
+            <div class="sim-box" style="border: 1px solid var(--term-green-dim);">
+              <div class="reg-counter">
+                <span>Registrador <strong>[ x2 ]</strong>:</span>
+                <span id="sim-val-x2" class="term-reg-val">5</span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="term-btn btn-sim-inc" data-reg="x2">+1</button>
+                <button type="button" class="term-btn btn-sim-dec" data-reg="x2">-1</button>
+              </div>
+            </div>
+
+            <div class="sim-box" style="border: 1px solid var(--term-green-dim);">
+              <div class="reg-counter">
+                <span>Registrador <strong>[ x3 ]</strong>:</span>
+                <span id="sim-val-x3" class="term-reg-val">0</span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="term-btn btn-sim-inc" data-reg="x3">+1</button>
+                <button type="button" class="term-btn btn-sim-dec" data-reg="x3">-1</button>
+              </div>
+            </div>
+
+            <div class="sim-box" style="border: 1px solid var(--term-green-dim);">
+              <div class="reg-counter">
+                <span>Registrador <strong>[ x4 ]</strong>:</span>
+                <span id="sim-val-x4" class="term-reg-val">3</span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="term-btn btn-sim-inc" data-reg="x4">+1</button>
+                <button type="button" class="term-btn btn-sim-dec" data-reg="x4">-1</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls Panel -->
+          <h4 class="term-h4">&gt; Configuração da Instrução de Desvio</h4>
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+            <label style="display: flex; flex-direction: column; font-size: 0.85rem;">
+              Instrução:
+              <select id="sel-branch-instr" style="background: #000; color: #33ff33; border: 1px solid #33ff33; padding: 6px; font-family: inherit;">
+                <option value="blt">blt (Branch if Less Than)</option>
+                <option value="bgt">bgt (Branch if Greater Than)</option>
+              </select>
+            </label>
+
+            <label style="display: flex; flex-direction: column; font-size: 0.85rem;">
+              Registrador A:
+              <select id="sel-branch-rega" style="background: #000; color: #33ff33; border: 1px solid #33ff33; padding: 6px; font-family: inherit;">
+                <option value="x1">x1</option>
+                <option value="x2">x2</option>
+                <option value="x3">x3</option>
+                <option value="x4">x4</option>
+              </select>
+            </label>
+
+            <label style="display: flex; flex-direction: column; font-size: 0.85rem;">
+              Registrador B:
+              <select id="sel-branch-regb" style="background: #000; color: #33ff33; border: 1px solid #33ff33; padding: 6px; font-family: inherit;">
+                <option value="x2" selected>x2</option>
+                <option value="x1">x1</option>
+                <option value="x3">x3</option>
+                <option value="x4">x4</option>
+              </select>
+            </label>
+
+            <label style="display: flex; flex-direction: column; font-size: 0.85rem;">
+              Destino Vermelho:
+              <select id="sel-branch-target" style="background: #000; color: #33ff33; border: 1px solid #33ff33; padding: 6px; font-family: inherit;">
+                <option value="B3 (Transpor o Vão)">B3 (Transpor o Vão do Ramo B)</option>
+                <option value="C13 (Trilha Central)">C13 (Trilha Central)</option>
+                <option value="A12 (Ramo A)">A12 (Ramo A)</option>
+                <option value="C28 (Reta Final)">C28 (Reta Final)</option>
+              </select>
+            </label>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+            <button type="button" id="btn-branch-c1" class="term-btn accent">[ 1. Iniciar Turno 1 (Preparar Branch) ]</button>
+            <button type="button" id="btn-adversary" class="term-btn" style="border-color: #ffb000; color: #ffb000;">[ 2. Simular Adversário Alterando Registrador! ]</button>
+            <button type="button" id="btn-branch-c2" class="term-btn">[ 3. Executar Turno 2 (Avaliar Condição ALU) ]</button>
+            <button type="button" id="btn-sim-reset" class="term-btn">[ Resetar ]</button>
+          </div>
+
+          <div id="branch-cycle-status" class="sim-status-banner term-alert">
+            Status: Pronto para iniciar novo ciclo de desvio.
+          </div>
+
+          <div id="term-sim-log" class="term-sim-console"></div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           SECTION 07: CRÉDITOS & EQUIPE USP
+           ==================================================================== -->
+      <section id="sec-autores" class="term-section">
+        <div class="term-section-header">
+          <h2 class="term-section-title">// 07. CRÉDITOS &amp; DESENVOLVIMENTO USP</h2>
+          <span class="term-section-badge">ENGENHARIA DE COMPUTAÇÃO // USP</span>
+        </div>
+
+        <p class="term-p">
+          O jogo <strong>PIPELINED</strong> foi concebido e criado por estudantes de <strong>Engenharia de Computação da Universidade de São Paulo (USP)</strong> como projeto de computação e arquitetura de hardware:
+        </p>
+
+        <div class="term-team-grid">
+          <div class="term-author-card">
+            <div class="term-author-name">Thales Soares</div>
+            <div class="term-author-role">Arte Visual &amp; Ilustrações Originais</div>
+            <p style="font-size: 0.85rem; color: #aaa;">Criador da mascote PIPELINED, das capas das cartas, das fichas e da identidade visual completa do jogo.</p>
+          </div>
+
+          <div class="term-author-card">
+            <div class="term-author-name">Matheus Henriquez</div>
+            <div class="term-author-role">Apelido: &quot;Mola&quot; // Engenharia de Computação</div>
+            <p style="font-size: 0.85rem; color: #aaa;">Desenvolvimento do balanceamento das cartas, mecânicas e testes práticos de jogabilidade.</p>
+          </div>
+
+          <div class="term-author-card">
+            <div class="term-author-name">Dimitri Leskow</div>
+            <div class="term-author-role">Apelido: &quot;KGB&quot; // Engenharia de Computação</div>
+            <p style="font-size: 0.85rem; color: #aaa;">Estruturação do fluxo de controle, modelagem de hazards e regras do circuito.</p>
+          </div>
+
+          <div class="term-author-card">
+            <div class="term-author-name">Victor Vasconcelos</div>
+            <div class="term-author-role">Engenharia de Computação // USP</div>
+            <p style="font-size: 0.85rem; color: #aaa;">Design de regras pedagógicas e conexão conceitual com a arquitetura RV32I.</p>
+          </div>
+
+          <div class="term-author-card">
+            <div class="term-author-name">Gabriel Evangelista</div>
+            <div class="term-author-role">Apelido: &quot;Simpatia&quot; // Engenharia de Computação</div>
+            <p style="font-size: 0.85rem; color: #aaa;">Validação em sala de aula, calibração estatística do baralho e instruções.</p>
+          </div>
+
+          <div class="term-author-card">
+            <div class="term-author-name">Fernando Ellerbrock</div>
+            <div class="term-author-role">Apelido: &quot;Primitivo&quot; // Engenharia de Computação</div>
+            <p style="font-size: 0.85rem; color: #aaa;">Redação técnica do regulamento oficial e especificações de hardware.</p>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; text-align: center;">
+          <a href="https://github.com/Sekqies/Pipelined" target="_blank" rel="noopener noreferrer" class="term-btn accent" style="padding: 10px 20px; font-size: 1rem;">
+            &#128187; Visitar Repositório Oficial no GitHub (github.com/Sekqies/Pipelined)
+          </a>
+        </div>
+      </section>
+
+      <!-- Terminal Footer -->
+      <footer class="term-footer">
+        <p>&copy; 2026 PIPELINED // Engenharia de Computação - Universidade de São Paulo (USP).</p>
+        <p style="margin-top: 4px;">Código-fonte aberto disponível em <a href="https://github.com/Sekqies/Pipelined" target="_blank" rel="noopener noreferrer">github.com/Sekqies/Pipelined</a>.</p>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       WINDOWS 99 / RETRO DESKTOP GUI VIEW
+       ======================================================================== -->
+  <div id="win99-view" style="display: none;">
+    
+    <!-- Desktop Icons Workspace -->
+    <div class="win99-desktop">
+      
+      <div class="win-icon" data-window="win-manual" tabindex="0">
+        <img src="assets/mascot-head.png" alt="Ícone Manual" class="win-icon-img">
+        <span class="win-icon-label">Regras.txt</span>
+      </div>
+
+      <div class="win-icon" data-window="win-tabuleiro-modal" tabindex="0">
+        <img src="assets/board.png" alt="Ícone Tabuleiro" class="win-icon-img">
+        <span class="win-icon-label">Tabuleiro.bmp</span>
+      </div>
+
+      <div class="win-icon" data-window="win-cartas-modal" tabindex="0">
+        <img src="assets/cards/card-addi.png" alt="Ícone Cartas" class="win-icon-img">
+        <span class="win-icon-label">Baralho.exe</span>
+      </div>
+
+      <div class="win-icon" data-window="win-arch-modal" tabindex="0">
+        <img src="assets/card-back-hazard.png" alt="Ícone Arquitetura" class="win-icon-img">
+        <span class="win-icon-label">Pipeline.doc</span>
+      </div>
+
+      <div class="win-icon" data-window="win-sim-modal" tabindex="0">
+        <img src="assets/card-back-pipeline.png" alt="Ícone Simulador" class="win-icon-img">
+        <span class="win-icon-label">Simulador.exe</span>
+      </div>
+
+      <div class="win-icon" data-window="win-team-modal" tabindex="0">
+        <img src="assets/mascot.png" alt="Ícone Autores" class="win-icon-img">
+        <span class="win-icon-label">Autores_USP.txt</span>
+      </div>
+
+      <div class="win-icon" data-action="open-github" tabindex="0">
+        <img src="favicon.png" alt="Ícone GitHub" class="win-icon-img">
+        <span class="win-icon-label">GitHub.url</span>
+      </div>
+
+      <div class="win-icon" data-action="switch-term" tabindex="0">
+        <img src="assets/mascot-head.png" alt="Ícone Terminal" class="win-icon-img">
+        <span class="win-icon-label">Terminal_DOS.exe</span>
+      </div>
+
+    </div>
+
+    <!-- Window: Manual de Regras do Jogo -->
+    <div id="win-manual" class="win-window">
+      <div class="win-titlebar">
+        <div class="win-title-left">
+          <img src="assets/mascot-head.png" alt="Ícone" class="win-title-icon">
+          <span>Manual de Regras - PIPELINED RISC-V (Bloco de Notas)</span>
+        </div>
+        <div class="win-title-controls">
+          <button type="button" class="win-ctl-btn win-ctl-min" title="Minimizar">_</button>
+          <button type="button" class="win-ctl-btn" title="Maximizar">&#9633;</button>
+          <button type="button" class="win-ctl-btn win-ctl-close" title="Fechar">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="win-menubar">
+        <span class="win-menu-item">Arquivo</span>
+        <span class="win-menu-item">Editar</span>
+        <span class="win-menu-item">Formatar</span>
+        <span class="win-menu-item">Exibir</span>
+        <span class="win-menu-item">Ajuda</span>
+      </div>
+
+      <div class="win-body">
+        <div class="win-content-sheet">
+          <h1 class="win-h1">Regras do Jogo de Trilha RISC-V - PIPELINED</h1>
+          <p><strong>Regulamento Oficial para Partidas de Teste // Versão 0.3</strong></p>
+          <p>Quatro jogadores percorrem um programa e disputam quem chega primeiro ao final (casa C30). As cartas permitem alterar registradores, acessar a memória, saltar trechos do percurso e interferir temporariamente nas ações dos adversários.</p>
+          
+          <h2 class="win-h2">1. Objetivo e Participantes</h2>
+          <p>Participam quatro jogadores, cada um com um peão. Vence quem alcançar primeiro C30 por movimento normal ou por uma ação concluída. Não é necessário passar por todas as casas. Os peões podem compartilhar a mesma casa e não bloqueiam uns aos outros.</p>
+
+          <h2 class="win-h2">2. Os Três Percursos do Circuito</h2>
+          <ul>
+            <li><strong>Trilha Principal:</strong> INÍCIO &rarr; C1 &rarr; ... &rarr; C30. Em C5 e C10, é possível escolher uma ramificação.</li>
+            <li><strong>Ramo A:</strong> C5 &rarr; A1 &rarr; ... &rarr; A18 &rarr; C25. Sem buracos. Da entrada ao reencontro são 19 movimentos, contra 20 pela trilha central.</li>
+            <li><strong>Ramo B:</strong> C10 &rarr; B1 &rarr; B2 &rarr; vão de três posições &rarr; B3 &rarr; B4 &rarr; B5 &rarr; C20. Só jump ou branch atravessa o vão! Não é permitido entrar no vão nem atravessá-lo por movimento normal.</li>
+          </ul>
+
+          <div class="win-callout">
+            <strong>Regra do Retorno antes do Buraco:</strong> Em B2, o jogador pode permanecer e usar uma carta, ou retornar: <code>B2 &rarr; B1 &rarr; C10</code>, um passo por turno. Também pode desistir em B1 e voltar a C10. O retorno não permite recomprar cartas e não cria destinos de salto para trás.
+          </div>
+
+          <h2 class="win-h2">3. Execução do Branch em Dois Turnos</h2>
+          <p><strong>Primeiro turno:</strong> anuncie a carta, indique os dois registradores comparados e fixe um destino válido. Coloque a carta à sua frente. Esse é o primeiro dos dois turnos de execução: você não caminha, não compra pela casa atual e não joga outra carta.</p>
+          <p><strong>Segundo turno:</strong> sem caminhar nem jogar outra carta, compare os valores atuais dos registradores compartilhados. Se a condição for verdadeira, mova o peão para o destino anunciado e receba a compra da casa, se houver direito. Se for falsa, permaneça onde está. Descarte o branch nos dois casos.</p>
+        </div>
+      </div>
+
+      <div class="win-statusbar">
+        <div class="win-status-panel">Linha 1, Coluna 1</div>
+        <div class="win-status-panel">Codificação: UTF-8 / RISC-V</div>
+      </div>
+    </div>
+
+    <!-- Window: Tabuleiro do Circuito -->
+    <div id="win-tabuleiro-modal" class="win-window">
+      <div class="win-titlebar">
+        <div class="win-title-left">
+          <img src="assets/board.png" alt="Ícone" class="win-title-icon">
+          <span>Tabuleiro.bmp - Paint do Windows 99</span>
+        </div>
+        <div class="win-title-controls">
+          <button type="button" class="win-ctl-btn win-ctl-min">_</button>
+          <button type="button" class="win-ctl-btn">&#9633;</button>
+          <button type="button" class="win-ctl-btn win-ctl-close">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="win-menubar">
+        <span class="win-menu-item">Arquivo</span>
+        <span class="win-menu-item">Editar</span>
+        <span class="win-menu-item">Imagem</span>
+        <span class="win-menu-item">Cores</span>
+        <span class="win-menu-item">Ajuda</span>
+      </div>
+
+      <div class="win-body">
+        <div class="win-content-sheet" style="text-align: center;">
+          <img src="assets/board.png" alt="Circuito do Tabuleiro" style="max-width: 100%; height: auto; border: 1px solid #808080;">
+          <p style="margin-top: 10px; font-size: 12px; color: #333;">
+            Dimensões do Tabuleiro: 992 &times; 701 pixels. Exibe trilha de 53 casas, dados M1..M5, banco de registradores x0..x3 e descarte lixeira.
+          </p>
+        </div>
+      </div>
+
+      <div class="win-statusbar">
+        <div class="win-status-panel">992 &times; 701 px | 24 bits de cor</div>
+      </div>
+    </div>
+
+    <!-- Window: Baralho de Cartas (Explorer) -->
+    <div id="win-cartas-modal" class="win-window">
+      <div class="win-titlebar">
+        <div class="win-title-left">
+          <img src="assets/cards/card-addi.png" alt="Ícone" class="win-title-icon">
+          <span>Baralho de Cartas do Jogo - Explorer C:\PIPELINED\DECK</span>
+        </div>
+        <div class="win-title-controls">
+          <button type="button" class="win-ctl-btn win-ctl-min">_</button>
+          <button type="button" class="win-ctl-btn">&#9633;</button>
+          <button type="button" class="win-ctl-btn win-ctl-close">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="win-body">
+        <div class="win-content-sheet">
+          <p>Total de 72 cartas no baralho oficial. Clique em qualquer carta para inspecionar e girar em 3D!</p>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-top: 16px;">
+            
+            <div style="text-align: center; border: 1px solid #c0c0c0; padding: 8px;">
+              <div class="card-flip-container" style="width: 140px; height: 195px;">
+                <div class="card-flip-inner">
+                  <div class="card-front"><img src="assets/cards/card-addi.png" alt="ADDI"></div>
+                  <div class="card-back"><img src="assets/card-back-pipeline.png" alt="Verso"></div>
+                </div>
+              </div>
+              <div style="font-weight: bold; margin-top: 6px; font-size: 12px;">ADDI (18 cartas)</div>
+            </div>
+
+            <div style="text-align: center; border: 1px solid #c0c0c0; padding: 8px;">
+              <div class="card-flip-container" style="width: 140px; height: 195px;">
+                <div class="card-flip-inner">
+                  <div class="card-front"><img src="assets/cards/card-add.png" alt="ADD"></div>
+                  <div class="card-back"><img src="assets/card-back-pipeline.png" alt="Verso"></div>
+                </div>
+              </div>
+              <div style="font-weight: bold; margin-top: 6px; font-size: 12px;">ADD (8 cartas)</div>
+            </div>
+
+            <div style="text-align: center; border: 1px solid #c0c0c0; padding: 8px;">
+              <div class="card-flip-container" style="width: 140px; height: 195px;">
+                <div class="card-flip-inner">
+                  <div class="card-front"><img src="assets/cards/card-sub.png" alt="SUB"></div>
+                  <div class="card-back"><img src="assets/card-back-pipeline.png" alt="Verso"></div>
+                </div>
+              </div>
+              <div style="font-weight: bold; margin-top: 6px; font-size: 12px;">SUB (8 cartas)</div>
+            </div>
+
+            <div style="text-align: center; border: 1px solid #c0c0c0; padding: 8px;">
+              <div class="card-flip-container" style="width: 140px; height: 195px;">
+                <div class="card-flip-inner">
+                  <div class="card-front"><img src="assets/cards/card-blt.png" alt="BLT"></div>
+                  <div class="card-back"><img src="assets/card-back-pipeline.png" alt="Verso"></div>
+                </div>
+              </div>
+              <div style="font-weight: bold; margin-top: 6px; font-size: 12px;">BLT (6 cartas)</div>
+            </div>
+
+            <div style="text-align: center; border: 1px solid #c0c0c0; padding: 8px;">
+              <div class="card-flip-container" style="width: 140px; height: 195px;">
+                <div class="card-flip-inner">
+                  <div class="card-front"><img src="assets/cards/card-bgt.png" alt="BGT"></div>
+                  <div class="card-back"><img src="assets/card-back-pipeline.png" alt="Verso"></div>
+                </div>
+              </div>
+              <div style="font-weight: bold; margin-top: 6px; font-size: 12px;">BGT (6 cartas)</div>
+            </div>
+
+            <div style="text-align: center; border: 1px solid #c0c0c0; padding: 8px;">
+              <div class="card-flip-container" style="width: 140px; height: 195px;">
+                <div class="card-flip-inner">
+                  <div class="card-front"><img src="assets/cards/card-jump.png" alt="JUMP"></div>
+                  <div class="card-back"><img src="assets/card-back-pipeline.png" alt="Verso"></div>
+                </div>
+              </div>
+              <div style="font-weight: bold; margin-top: 6px; font-size: 12px;">J (3 cartas raras)</div>
+            </div>
+
+            <div style="text-align: center; border: 1px solid #c0c0c0; padding: 8px;">
+              <div class="card-flip-container" style="width: 140px; height: 195px;">
+                <div class="card-flip-inner">
+                  <div class="card-front"><img src="assets/cards/card-lw.png" alt="LW"></div>
+                  <div class="card-back"><img src="assets/card-back-pipeline.png" alt="Verso"></div>
+                </div>
+              </div>
+              <div style="font-weight: bold; margin-top: 6px; font-size: 12px;">LW (6 cartas)</div>
+            </div>
+
+            <div style="text-align: center; border: 1px solid #c0c0c0; padding: 8px;">
+              <div class="card-flip-container" style="width: 140px; height: 195px;">
+                <div class="card-flip-inner">
+                  <div class="card-front"><img src="assets/cards/card-sw.png" alt="SW"></div>
+                  <div class="card-back"><img src="assets/card-back-pipeline.png" alt="Verso"></div>
+                </div>
+              </div>
+              <div style="font-weight: bold; margin-top: 6px; font-size: 12px;">SW (5 cartas)</div>
+            </div>
+
+            <div style="text-align: center; border: 1px solid #c0c0c0; padding: 8px;">
+              <div class="card-flip-container" style="width: 140px; height: 195px;">
+                <div class="card-flip-inner">
+                  <div class="card-front"><img src="assets/cards/card-uc-memread.png" alt="MemRead=0"></div>
+                  <div class="card-back"><img src="assets/card-back-hazard.png" alt="Verso Falha"></div>
+                </div>
+              </div>
+              <div style="font-weight: bold; margin-top: 6px; font-size: 12px;">UC: MemRead=0</div>
+            </div>
+
+            <div style="text-align: center; border: 1px solid #c0c0c0; padding: 8px;">
+              <div class="card-flip-container" style="width: 140px; height: 195px;">
+                <div class="card-flip-inner">
+                  <div class="card-front"><img src="assets/cards/card-uc-regwrite.png" alt="RegWrite=0"></div>
+                  <div class="card-back"><img src="assets/card-back-hazard.png" alt="Verso Falha"></div>
+                </div>
+              </div>
+              <div style="font-weight: bold; margin-top: 6px; font-size: 12px;">UC: RegWrite=0</div>
+            </div>
+
+            <div style="text-align: center; border: 1px solid #c0c0c0; padding: 8px;">
+              <div class="card-flip-container" style="width: 140px; height: 195px;">
+                <div class="card-flip-inner">
+                  <div class="card-front"><img src="assets/cards/card-uc-jmp.png" alt="JMP=0"></div>
+                  <div class="card-back"><img src="assets/card-back-hazard.png" alt="Verso Falha"></div>
+                </div>
+              </div>
+              <div style="font-weight: bold; margin-top: 6px; font-size: 12px;">UC: JMP=0</div>
+            </div>
+
+            <div style="text-align: center; border: 1px solid #c0c0c0; padding: 8px;">
+              <div class="card-flip-container" style="width: 140px; height: 195px;">
+                <div class="card-flip-inner">
+                  <div class="card-front"><img src="assets/cards/card-uc-restore.png" alt="Restaurar"></div>
+                  <div class="card-back"><img src="assets/card-back-pipeline.png" alt="Verso"></div>
+                </div>
+              </div>
+              <div style="font-weight: bold; margin-top: 6px; font-size: 12px;">UC: Restaurar (:D)</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="win-statusbar">
+        <div class="win-status-panel">12 itens exibidos (72 cartas totais)</div>
+      </div>
+    </div>
+
+    <!-- Window: Conexão com Arquitetura Pipeline -->
+    <div id="win-arch-modal" class="win-window">
+      <div class="win-titlebar">
+        <div class="win-title-left">
+          <img src="assets/card-back-hazard.png" alt="Ícone" class="win-title-icon">
+          <span>Arquitetura_RISC_V.doc - WordPad do Windows 99</span>
+        </div>
+        <div class="win-title-controls">
+          <button type="button" class="win-ctl-btn win-ctl-min">_</button>
+          <button type="button" class="win-ctl-btn">&#9633;</button>
+          <button type="button" class="win-ctl-btn win-ctl-close">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="win-body">
+        <div class="win-content-sheet">
+          <h1 class="win-h1">Fundamentos da Arquitetura RISC-V no Tabuleiro</h1>
+          <p>Este jogo traduz conceitos de hardware que costumam ser abstratos em mecânicas tangíveis e competitivas:</p>
+          
+          <div class="win-callout arch">
+            <strong>1. O Pipeline de 5 Estágios:</strong><br>
+            - <strong>IF (Instruction Fetch):</strong> Avançar 1 casa normal no percurso.<br>
+            - <strong>ID (Instruction Decode):</strong> Comprar cartas e ler os operandos exigidos.<br>
+            - <strong>EX (Execute / ALU):</strong> Executar ADD/SUB ou comparar os valores em BLT/BGT.<br>
+            - <strong>MEM (Memory Access):</strong> Acessar posições M1..M5 através de LW ou SW.<br>
+            - <strong>WB (Write Back):</strong> Atualizar a ficha do registrador de destino no banco.
+          </div>
+
+          <h2 class="win-h2">2. Penalidade de Desvio (Branch Penalty)</h2>
+          <p>Quando a CPU se depara com um salto condicional, o endereço da próxima instrução depende da comparação matemática. O jogo traduz o custo de resolução do branch em 2 turnos de compromisso na mesa.</p>
+
+          <h2 class="win-h2">3. Dependências de Dados e Corrida de Registradores</h2>
+          <p>Como os registradores x1..x4 são compartilhados entre os 4 participantes, o tabuleiro cria condições de corrida reais onde outros jogadores podem invalidar uma condição de salto antes que ela chegue ao estágio de execução.</p>
+        </div>
+      </div>
+
+      <div class="win-statusbar">
+        <div class="win-status-panel">Página 1 de 1</div>
+      </div>
+    </div>
+
+    <!-- Window: Simulador de Branch (Visual Basic Style) -->
+    <div id="win-sim-modal" class="win-window">
+      <div class="win-titlebar">
+        <div class="win-title-left">
+          <img src="assets/card-back-pipeline.png" alt="Ícone" class="win-title-icon">
+          <span>Simulador de Desvios RISC-V.exe - Visual Basic 6.0</span>
+        </div>
+        <div class="win-title-controls">
+          <button type="button" class="win-ctl-btn win-ctl-min">_</button>
+          <button type="button" class="win-ctl-btn">&#9633;</button>
+          <button type="button" class="win-ctl-btn win-ctl-close">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="win-body">
+        <div class="win-content-sheet">
+          <p>Altere os registradores e teste a resolução de um branch em 2 ciclos com possibilidade de interferência de adversário:</p>
+          
+          <div style="display: flex; gap: 12px; margin: 12px 0; flex-wrap: wrap;">
+            <div style="border: 1px solid #808080; padding: 8px; background: #f0f0f0;">
+              <div>x1: <strong id="win-sim-val-x1">2</strong></div>
+              <button type="button" class="win-btn btn-sim-inc" data-reg="x1">+1</button>
+              <button type="button" class="win-btn btn-sim-dec" data-reg="x1">-1</button>
+            </div>
+            <div style="border: 1px solid #808080; padding: 8px; background: #f0f0f0;">
+              <div>x2: <strong id="win-sim-val-x2">5</strong></div>
+              <button type="button" class="win-btn btn-sim-inc" data-reg="x2">+1</button>
+              <button type="button" class="win-btn btn-sim-dec" data-reg="x2">-1</button>
+            </div>
+            <div style="border: 1px solid #808080; padding: 8px; background: #f0f0f0;">
+              <div>x3: <strong id="win-sim-val-x3">0</strong></div>
+              <button type="button" class="win-btn btn-sim-inc" data-reg="x3">+1</button>
+              <button type="button" class="win-btn btn-sim-dec" data-reg="x3">-1</button>
+            </div>
+            <div style="border: 1px solid #808080; padding: 8px; background: #f0f0f0;">
+              <div>x4: <strong id="win-sim-val-x4">3</strong></div>
+              <button type="button" class="win-btn btn-sim-inc" data-reg="x4">+1</button>
+              <button type="button" class="win-btn btn-sim-dec" data-reg="x4">-1</button>
+            </div>
+          </div>
+
+          <div id="win-sim-log" style="background: #fff; border: 2px inset #808080; padding: 10px; height: 160px; overflow-y: auto; font-family: monospace; font-size: 12px;"></div>
+        </div>
+      </div>
+
+      <div class="win-statusbar">
+        <div class="win-status-panel">Simulador Ativo</div>
+      </div>
+    </div>
+
+    <!-- Window: Autores USP -->
+    <div id="win-team-modal" class="win-window">
+      <div class="win-titlebar">
+        <div class="win-title-left">
+          <img src="assets/mascot.png" alt="Ícone" class="win-title-icon">
+          <span>Sobre_os_Autores_USP.txt</span>
+        </div>
+        <div class="win-title-controls">
+          <button type="button" class="win-ctl-btn win-ctl-min">_</button>
+          <button type="button" class="win-ctl-btn">&#9633;</button>
+          <button type="button" class="win-ctl-btn win-ctl-close">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="win-body">
+        <div class="win-content-sheet">
+          <h1 class="win-h1">Estudantes Criadores do Jogo PIPELINED</h1>
+          <p><strong>Universidade de São Paulo (USP) - Engenharia de Computação</strong></p>
+          <ul>
+            <li><strong>Thales Soares</strong> {Arte Visual &amp; Ilustrações por ele}</li>
+            <li><strong>Matheus Henriquez (Mola)</strong></li>
+            <li><strong>Dimitri Leskow (KGB)</strong></li>
+            <li><strong>Victor Vasconcelos</strong></li>
+            <li><strong>Gabriel Evangelista (Simpatia)</strong></li>
+            <li><strong>Fernando Ellerbrock (Primitivo)</strong></li>
+          </ul>
+          <p style="margin-top: 14px;">
+            Repositório Oficial do Projeto: <a href="https://github.com/Sekqies/Pipelined" target="_blank" rel="noopener noreferrer">https://github.com/Sekqies/Pipelined</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="win-statusbar">
+        <div class="win-status-panel">Universidade de São Paulo (USP)</div>
+      </div>
+    </div>
+
+    <!-- Windows 99 Start Menu -->
+    <div id="win-start-menu" class="win-start-menu hidden">
+      <div class="win-start-sidebar">WINDOWS 99</div>
+      <div class="win-start-items">
+        <div class="win-start-item" data-window="win-manual">
+          <img src="assets/mascot-head.png" alt="" style="width: 16px;">
+          <span>Manual de Regras</span>
+        </div>
+        <div class="win-start-item" data-window="win-tabuleiro-modal">
+          <img src="assets/board.png" alt="" style="width: 16px;">
+          <span>Circuito do Tabuleiro</span>
+        </div>
+        <div class="win-start-item" data-window="win-cartas-modal">
+          <img src="assets/cards/card-addi.png" alt="" style="width: 16px;">
+          <span>Baralho de Cartas</span>
+        </div>
+        <div class="win-start-item" data-window="win-arch-modal">
+          <img src="assets/card-back-hazard.png" alt="" style="width: 16px;">
+          <span>Conexão Pipeline RISC-V</span>
+        </div>
+        <div class="win-start-item" data-window="win-sim-modal">
+          <img src="assets/card-back-pipeline.png" alt="" style="width: 16px;">
+          <span>Simulador de Desvio</span>
+        </div>
+        <div class="win-start-item" data-window="win-team-modal">
+          <img src="assets/mascot.png" alt="" style="width: 16px;">
+          <span>Sobre os Autores (USP)</span>
+        </div>
+        <div class="win-start-divider"></div>
+        <div class="win-start-item" data-action="switch-term">
+          <span style="font-family: monospace; font-weight: bold;">&gt;_</span>
+          <span>Alternar para Terminal DOS</span>
+        </div>
+        <div class="win-start-item" data-action="open-github">
+          <img src="favicon.png" alt="" style="width: 16px;">
+          <span>Repositório GitHub</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Windows 99 Taskbar -->
+    <div class="win-taskbar">
+      <button type="button" id="win-start-btn" class="win-btn win-start-btn">
+        <img src="assets/mascot-head.png" alt="" class="win-start-icon">
+        <span>Iniciar</span>
+      </button>
+
+      <div class="win-tasks-list">
+        <button type="button" class="win-btn win-task-item" data-window="win-manual">
+          <span>Regras.txt</span>
+        </button>
+        <button type="button" class="win-btn win-task-item" data-window="win-tabuleiro-modal">
+          <span>Tabuleiro.bmp</span>
+        </button>
+        <button type="button" class="win-btn win-task-item" data-window="win-cartas-modal">
+          <span>Baralho.exe</span>
+        </button>
+      </div>
+
+      <div class="win-tray">
+        <button type="button" class="action-toggle-sound" style="background: none; border: none; cursor: pointer; font-size: 12px;" title="Alternar Som">&#128263;</button>
+        <button type="button" class="action-toggle-theme" style="background: none; border: none; cursor: pointer; font-size: 12px; font-family: monospace;" title="Alternar para Terminal DOS">&gt;_</button>
+        <span id="win-clock">12:00</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/sound.js"></script>
+  <script src="js/simulator.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
